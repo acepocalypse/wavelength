@@ -40,19 +40,19 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-        Given the concept: "{idea}"
-        Return exactly {count} opposite-end word pairs suitable for a Wavelength spectrum.
-        Be creative and fun/funny but avoid words that is hard to understand non-common.
-        Each pair must be a JSON object with keys "left" and "right".
-        Output a JSON array of length {count}, for example:
+        You are a JSON data generator. Generate exactly {count} pairs of opposing concepts based on the theme: "{idea}".
+        Your output must be valid JSON and nothing else - no explanation, no markdown formatting, no comments.
 
+        Format the output as an array of objects, where each object has "left" and "right" properties.
+        Use simple, common, and easily understandable words. Be creative and fun.
+
+        Example output format:
         [
         {{"left":"Hot","right":"Cold"}},
-        {{"left":"Joy","right":"Sadness"}},
-        ...
+        {{"left":"Joy","right":"Sadness"}}
         ]
 
-        Do not include any extra text or commentary—only the JSON array.
+        Ensure you output EXACTLY {count} pairs and verify your output is valid JSON.
         """.strip()
         
     try:
@@ -67,6 +67,24 @@ async def generate_spectrums(req: SpectrumRequest):
         if response.candidates and len(response.candidates) > 0:
             if response.candidates[0].content and response.candidates[0].content.parts:
                 generated = response.candidates[0].content.parts[0].text
+                # Debug - print raw response
+                print("Raw response from API:", repr(generated))
+                
+                # Remove any markdown code block syntax if present
+                if generated.startswith("```json"):
+                    generated = generated.split("```json", 1)[1]
+                if generated.startswith("```"):
+                    generated = generated.split("```", 1)[1]
+                if generated.endswith("```"):
+                    generated = generated.rsplit("```", 1)[0]
+                    
+                # Strip whitespace
+                generated = generated.strip()
+                
+                print("Processed response:", repr(generated))
+                
+                if not generated:
+                    raise ValueError("Empty response after processing")
             else:
                 raise ValueError("No text content in response")
         else:
