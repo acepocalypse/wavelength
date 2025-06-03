@@ -3,214 +3,71 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wavelength (AI or Default Spectrums)</title>
+  <title>Wavelength (3‐Screen, Single Page)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --cream-bg: #F3EEE9;
-      --navy-border: #1E293B;
-      --yellow: #FBBF24;
-      --red: #F87171;
-      --blue: #60A5FA;
-      --needle-color: #5FC7B7;
-      --pivot-color: #E63946;
-      --border-thickness: 8px;
-      --radius: 100px;
-      --full-width: calc(var(--radius)*2);
-      --half-height: var(--radius);
-      --container-height: calc(var(--half-height)+var(--border-thickness));
-    }
-
-    body {
-      margin: 0; padding: 0;
-      background: #ECECEC;
-      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      display: flex; flex-direction: column; align-items: center;
-      min-height: 100vh;
-    }
-
-    /* Hidden by default; we toggle “hidden” class in JS */
+    /* Utility to hide an element */
     .hidden { display: none; }
 
-    /* SETUP SCREEN */
-    #setup-screen {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      width: 100%; min-height: 100vh;
-      background: rgba(0,0,0,0.03); padding: 1rem;
-    }
-    .setup-card {
-      background: #FFF;
-      border: 2px solid var(--navy-border);
-      border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%; max-width: 400px;
-      padding: 1.5rem; text-align: center;
-    }
-
-    /* PROMPT SCREEN: choose default vs AI */
-    #prompt-screen {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      width: 100%; min-height: 100vh;
-      background: rgba(0,0,0,0.05); padding: 1rem;
-    }
-    .prompt-card {
-      background: #FFF;
-      border: 2px solid var(--navy-border);
-      border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%; max-width: 400px;
-      padding: 1.5rem; text-align: center;
-    }
-
-    /* SEMI-CIRCLE */
-    .slider-container {
-      position: relative;
-      width: 100%; max-width: var(--full-width);
-      height: var(--container-height);
-      margin: 0 auto 1rem;
-    }
-    .semi-circle {
-      position: relative;
-      width: 100%;
-      height: var(--container-height);
-      background-color: var(--cream-bg);
-      border: var(--border-thickness) solid var(--navy-border);
-      border-bottom: none;
-      border-top-left-radius: var(--radius);
-      border-top-right-radius: var(--radius);
-      overflow: hidden; box-sizing: border-box;
-    }
-    .target-overlay {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none; z-index: 2;
-      background: transparent;
-    }
-    .guess-marker {
-      position: absolute; bottom: 0; left: 50%;
-      width: 4px;
-      height: calc(var(--half-height) + var(--border-thickness));
-      transform-origin: bottom center;
-      z-index: 3;
-    }
-    .needle-stick {
-      position: absolute; bottom: 0; left: 50%;
-      width: 4px;
-      height: calc(var(--half-height) * 0.9);
-      background-color: var(--needle-color);
-      border-radius: 2px 2px 0 0;
-      transform: translateX(-50%);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-      z-index: 4;
-    }
-    .needle-base {
-      position: absolute; bottom: -8px; left: 50%;
-      width: 24px; height: 24px;
-      background-color: var(--pivot-color);
-      border-radius: 50%;
-      transform: translateX(-50%);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-      z-index: 5;
-    }
-
-    /* BUTTONS */
-    .btn-primary {
-      background-color: var(--navy-border); color: #FFF;
-    }
-    .btn-primary:hover {
-      background-color: #16202E;
-    }
-    .btn-secondary {
-      background-color: #8B5CF6; color: #FFF;
-    }
-    .btn-secondary:hover {
-      background-color: #7A4EE6;
-    }
-    .btn-contrast {
-      background-color: #22C55E; color: #FFF;
-    }
-    .btn-contrast:hover {
-      background-color: #16A34A;
-    }
-
-    @media (min-width: 640px) {
-      :root {
-        --border-thickness: 12px; --radius: 120px;
-        --full-width: calc(var(--radius)*2);
-        --half-height: var(--radius);
-        --container-height: calc(var(--half-height)+var(--border-thickness));
-      }
-    }
-    @media (min-width: 1024px) {
-      :root {
-        --border-thickness: 16px; --radius: 150px;
-        --full-width: calc(var(--radius)*2);
-        --half-height: var(--radius);
-        --container-height: calc(var(--half-height)+var(--border-thickness));
-      }
-    }
+    /* (Other CSS omitted for brevity—use the same semicircle/slider styling you already have.) */
   </style>
 </head>
 <body>
-  <!-- ===========================
-       1) SETUP SCREEN (Landing)
-       =========================== -->
-  <div id="setup-screen">
-    <div class="setup-card">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">Wavelength</h1>
-      <p class="text-gray-600 mb-4">Game Setup</p>
+  <!-- =========================================
+       1) SETUP SCREEN (initial landing page)
+       ========================================= -->
+  <div id="setup-screen" class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
+      <h1 class="text-3xl font-bold mb-4">Wavelength Setup</h1>
 
-      <div class="space-y-4 mb-6">
+      <div class="space-y-4 mb-6 text-left">
         <div>
-          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
+          <label for="team1" class="block text-sm font-medium text-gray-700">Team 1 Name</label>
           <input
             type="text"
             id="team1"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-            placeholder="Enter team name"
+            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value="Team 1"
           />
         </div>
-
         <div>
-          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
+          <label for="team2" class="block text-sm font-medium text-gray-700">Team 2 Name</label>
           <input
             type="text"
             id="team2"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-            placeholder="Enter team name"
+            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value="Team 2"
           />
         </div>
-
         <div>
-          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
+          <label for="points" class="block text-sm font-medium text-gray-700">Points To Win</label>
           <input
             type="number"
             id="points"
             min="1"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
             value="10"
           />
         </div>
       </div>
 
-      <button id="start-btn" class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md">
+      <button
+        id="start-btn"
+        class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
+      >
         Start Game
       </button>
     </div>
   </div>
 
-  <!-- ===========================================
-       2) PROMPT SCREEN: choose Default vs AI
-       =========================================== -->
-  <div id="prompt-screen" class="hidden">
-    <div class="prompt-card">
-      <h2 class="text-xl font-bold text-gray-900 mb-2">Spectrums Source</h2>
+  <!-- ====================================================
+       2) SPECTRUM SOURCE SCREEN (choose Default vs. AI)
+       ==================================================== -->
+  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center min-h-screen bg-gray-50">
+    <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
+      <h2 class="text-2xl font-bold mb-4">Choose Spectrum Source</h2>
 
-      <!-- Radio: Default or Generate -->
+      <!-- Radio Buttons -->
       <div class="mb-4 text-left">
         <label class="inline-flex items-center mr-4">
           <input
@@ -235,29 +92,29 @@
         </label>
       </div>
 
-      <!-- If “Generate via AI” is selected -->
-      <div id="generate-section" class="mb-4 hidden">
-        <p class="text-gray-700 mb-2">Enter a Concept or Idea</p>
+      <!-- If “Generate via AI” is selected, show this block -->
+      <div id="generate-section" class="mb-4 hidden text-left">
+        <p class="text-gray-700 mb-2">Enter a Concept or Idea:</p>
         <input
           type="text"
           id="idea-input"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 mb-2 text-sm"
+          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
           placeholder="e.g. emotion, temperature, taste..."
         />
         <button
           id="generate-btn"
-          class="btn-primary w-full py-2 rounded-lg text-base font-semibold mb-1"
+          class="mt-3 btn-primary w-full py-2 rounded-lg text-base font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
         >
           Generate Spectrums
         </button>
         <p id="prompt-status" class="mt-2 text-sm text-gray-500 invisible"></p>
       </div>
 
-      <!-- If “Default” is selected -->
-      <div id="default-section" class="mb-1">
+      <!-- If “Use Default Spectrums” is selected, show this button -->
+      <div id="default-section" class="mb-1 text-left">
         <button
           id="use-default-btn"
-          class="btn-secondary w-full py-2 rounded-lg text-base font-semibold"
+          class="btn-secondary w-full py-2 rounded-lg text-base font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
         >
           Use Default Spectrums
         </button>
@@ -265,17 +122,17 @@
     </div>
   </div>
 
-  <!-- ===========================
+  <!-- ============================
        3) GAME SCREEN
-       =========================== -->
-  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6">
+       ============================ -->
+  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6 bg-gray-100">
     <!-- Header -->
     <header class="w-full max-w-xl text-center mb-6">
       <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
     </header>
 
-    <!-- Spectrum & Needle -->
-    <div class="w-full max-w-xs">
+    <!-- Semicircle + Needle (same styling as before) -->
+    <div class="w-full max-w-xs mb-4">
       <div class="slider-container">
         <div class="semi-circle">
           <div id="target-overlay" class="target-overlay"></div>
@@ -287,28 +144,24 @@
       </div>
     </div>
 
-    <!-- Labels -->
-    <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-4 px-2">
+    <!-- Labels & Instructions -->
+    <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
       <div id="left-concept" class="text-red-500">Hot</div>
       <div id="right-concept" class="text-blue-500">Cold</div>
     </div>
-
-    <!-- Instructions -->
     <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md"></div>
 
-    <!-- Controls -->
+    <!-- Controls (hide/reveal, slider, lock, left/right, next round) -->
     <div class="w-full max-w-md space-y-4">
-      <!-- Psychic Controls -->
       <div id="psychic-controls" class="hidden">
         <button
           id="hide-target-btn"
-          class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+          class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
         >
-          Hide Target &amp; Pass to Guessers
+          Hide Target & Pass to Guessers
         </button>
       </div>
 
-      <!-- Guesser Controls -->
       <div id="guesser-controls" class="hidden flex flex-col items-center">
         <div class="horizontal-slider-container w-full">
           <input
@@ -317,18 +170,17 @@
             max="180"
             value="90"
             id="active-horizontal-slider"
-            class="horizontal-slider w-full"
+            class="w-full"
           />
         </div>
         <button
           id="lock-guess-btn"
-          class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+          class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700"
         >
           Lock In Guess
         </button>
       </div>
 
-      <!-- Opponent Controls -->
       <div id="opponent-controls" class="hidden flex space-x-2">
         <button
           id="choose-left-btn"
@@ -344,7 +196,6 @@
         </button>
       </div>
 
-      <!-- Next Round Controls -->
       <div id="next-round-controls" class="hidden flex flex-col items-center">
         <div
           id="round-result"
@@ -352,7 +203,7 @@
         ></div>
         <button
           id="next-round-btn"
-          class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+          class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
         >
           Next Round
         </button>
@@ -395,7 +246,9 @@
   </div>
 
   <script>
-    // 1) Default spectra array
+    // —————————————————————————
+    // 1) Built-in Defaults
+    // —————————————————————————
     const defaultSpectra = [
       ["Hot","Cold"], ["Good","Evil"], ["Simple","Complex"],
       ["Cheap","Expensive"], ["Safe","Dangerous"], ["Soft","Hard"],
@@ -403,13 +256,15 @@
       ["Tradition","Innovation"], ["Freedom","Security"], ["Bad","Good"]
     ];
 
-    // 2) gameState
+    // —————————————————————————
+    // 2) gameState Object
+    // —————————————————————————
     const gameState = {
       team1: { name: "Team 1", score: 0 },
       team2: { name: "Team 2", score: 0 },
       pointsToWin: 10,
       currentTurn: "team1-psychic",
-      currentSpectrum: [],      // either default or AI‐generated
+      currentSpectrum: [],      // will hold either default or AI
       spectrumIndex: 0,
       targetPosition: 0,
       guess: 90,
@@ -418,18 +273,20 @@
       sdScores: { team1: 0, team2: 0 }
     };
 
-    // 3) DOM refs
+    // —————————————————————————
+    // 3) DOM References
+    // —————————————————————————
     const setupScreen    = document.getElementById("setup-screen");
     const promptScreen   = document.getElementById("prompt-screen");
     const gameScreen     = document.getElementById("game-screen");
 
-    // Setup refs
+    // Setup inputs/buttons
     const startBtn       = document.getElementById("start-btn");
     const team1Input     = document.getElementById("team1");
     const team2Input     = document.getElementById("team2");
     const pointsInput    = document.getElementById("points");
 
-    // Prompt refs
+    // Spectrum-source inputs/buttons
     const radioDefault   = document.getElementById("radio-default");
     const radioGenerate  = document.getElementById("radio-generate");
     const generateSection= document.getElementById("generate-section");
@@ -439,7 +296,7 @@
     const promptStatus   = document.getElementById("prompt-status");
     const useDefaultBtn  = document.getElementById("use-default-btn");
 
-    // Game refs
+    // Game-screen controls
     const hideTargetBtn  = document.getElementById("hide-target-btn");
     const activeSlider   = document.getElementById("active-horizontal-slider");
     const lockGuessBtn   = document.getElementById("lock-guess-btn");
@@ -460,10 +317,12 @@
     const roundResult    = document.getElementById("round-result");
     const guessMarker    = document.getElementById("guess-marker");
 
-    // 4) Backend URL (no trailing slash)
+    // 4) BACKEND URL (no trailing slash!)
     const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app";
 
-    // 5) Toggle “Generate via AI” ↔ “Use Default” UI
+    // —————————————————————————
+    // 5) Toggling “Generate vs Default” UI
+    // —————————————————————————
     function updatePromptUI() {
       if (radioGenerate.checked) {
         generateSection.classList.remove("hidden");
@@ -476,27 +335,31 @@
     radioDefault.addEventListener("change", updatePromptUI);
     radioGenerate.addEventListener("change", updatePromptUI);
 
-    // 6) Fetch function for AI path
+    // —————————————————————————
+    // 6) AI FETCH FUNCTION
+    // —————————————————————————
     async function fetchSpectrums(idea, count = 30) {
       const url = `${BACKEND_URL}/api/generateSpectrums`;
-      console.log("→ Fetching from:", url, "body:", { idea, count });
+      console.log("→ POST to:", url, "body:", { idea, count });
       const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idea, count })
       });
-      console.log("← Response status:", resp.status);
+      console.log("← Status:", resp.status);
       if (!resp.ok) {
         const text = await resp.text();
-        console.error("   Got error text:", text);
+        console.error("   Error text:", text);
         throw new Error(`HTTP ${resp.status}`);
       }
       const payload = await resp.json();
-      console.log("← Parsed payload:", payload);
+      console.log("← Response JSON:", payload);
       return payload;
     }
 
-    // 7) “Generate via AI” button logic
+    // —————————————————————————
+    // 7) “Generate via AI” BUTTON HANDLER
+    // —————————————————————————
     generateBtn.addEventListener("click", async () => {
       const idea = ideaInput.value.trim();
       if (!idea) {
@@ -513,15 +376,17 @@
       try {
         const data = await fetchSpectrums(idea, 30);
         if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
-          throw new Error("Invalid or insufficient spectrums returned");
+          throw new Error("Bad or too few spectrums returned");
         }
         gameState.currentSpectrum = data.spectrums;
         promptStatus.textContent = "Spectrums generated!";
         promptStatus.classList.remove("text-gray-500", "text-red-500");
         promptStatus.classList.add("text-green-600");
+
         setTimeout(() => {
           promptScreen.classList.add("hidden");
           gameScreen.classList.remove("hidden");
+          startNewRound();
         }, 500);
       } catch (err) {
         console.error("❌ Generation error:", err);
@@ -532,14 +397,20 @@
       }
     });
 
-    // 8) “Use Default Spectrums” button logic
+    // —————————————————————————
+    // 8) “Use Default Spectrums” BUTTON HANDLER
+    // —————————————————————————
     useDefaultBtn.addEventListener("click", () => {
+      // Copy default array into gameState.currentSpectrum
       gameState.currentSpectrum = defaultSpectra.slice();
       promptScreen.classList.add("hidden");
       gameScreen.classList.remove("hidden");
+      startNewRound();
     });
 
-    // 9) “Start Game” from Setup screen
+    // —————————————————————————
+    // 9) “Start Game” BUTTON (from Setup → Spectrum Source)
+    // —————————————————————————
     startBtn.addEventListener("click", () => {
       gameState.team1.name  = team1Input.value.trim() || "Team 1";
       gameState.team2.name  = team2Input.value.trim() || "Team 2";
@@ -551,41 +422,38 @@
       gameState.sdScores = { team1: 0, team2: 0 };
       gameState.spectrumIndex = 0;
 
-      team1NameEl.textContent = gameState.team1.name;
-      team2NameEl.textContent = gameState.team2.name;
-      team1Score.textContent  = "0";
-      team2Score.textContent  = "0";
+      // Update scoreboard placeholders
+      document.getElementById("team1-name").textContent = gameState.team1.name;
+      document.getElementById("team2-name").textContent = gameState.team2.name;
+      team1Score.textContent = "0";
+      team2Score.textContent = "0";
       targetScoreEl.textContent = gameState.pointsToWin;
 
-      // Hide Setup, show Spectrum Source screen
+      // Hide Setup screen, show Spectrum Source screen
       setupScreen.classList.add("hidden");
       promptScreen.classList.remove("hidden");
       updatePromptUI();
     });
 
-    // 10) All game logic functions follow...
-
-    function initGame() {
-      // Not needed here because we already set things right before showing gameScreen
-      startNewRound();
-    }
-
+    // —————————————————————————
+    // 10) All the Game Logic (same as before)
+    // —————————————————————————
     function startNewRound() {
       roundResult.textContent = "";
 
-      // Cycle through whichever array was chosen
+      // Grab whichever array was chosen: default or AI
       const arr = gameState.currentSpectrum;
-      const [leftWord, rightWord] = arr[gameState.spectrumIndex % arr.length];
+      const [leftWord, rightWord] = arr[ gameState.spectrumIndex % arr.length ];
       gameState.spectrumIndex++;
 
       leftConcept.textContent  = leftWord;
       rightConcept.textContent = rightWord;
 
-      // Random target center [4°, 176°]
+      // Random target center [4°,176°]
       gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
       gameState.guess = 90;
 
-      // Build 40° conic gradient
+      // Build the 40° conic‐gradient “pizza slice”
       const center    = gameState.targetPosition;
       const bandStart = center - 20;
       const fromAngle = bandStart + 270;
@@ -729,13 +597,13 @@
             gameState.suddenDeath = true;
             gameState.sdScores = { team1: 0, team2: 0 };
             setTimeout(() => {
-              alert("Tie at target! Sudden Death begins.");
+              alert("Tie at target → Sudden Death begins.");
               startNewRound();
             }, 500);
           }
         }
       } else {
-        // Sudden death round
+        // Sudden death logic (similar)
         if (pPts > 0) {
           gameState.sdScores[psychicTeam] += pPts;
           resultText = `${gameState[psychicTeam].name} scores ${pPts} points!`;
@@ -765,15 +633,15 @@
         const sd2 = gameState.sdScores.team2;
         if (sd1 > sd2) {
           setTimeout(() => {
-            endGame(`${gameState.team1.name} wins sudden death!`);
+            endGame(`${gameState.team1.name} wins Sudden Death!`);
           }, 500);
         } else if (sd2 > sd1) {
           setTimeout(() => {
-            endGame(`${gameState.team2.name} wins sudden death!`);
+            endGame(`${gameState.team2.name} wins Sudden Death!`);
           }, 500);
         } else {
           setTimeout(() => {
-            alert("Still tied! Next sudden death round.");
+            alert("Still tied → next Sudden Death round");
             startNewRound();
           }, 500);
         }
@@ -821,7 +689,7 @@
       if (!document.getElementById("restart-btn")) {
         const btn = document.createElement("button");
         btn.id = "restart-btn";
-        btn.className = "btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md mt-4";
+        btn.className = "btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md mt-4 bg-gray-800 text-white hover:bg-gray-700";
         btn.textContent = "New Game";
         btn.onclick = () => {
           document.getElementById("restart-btn").remove();
@@ -832,7 +700,7 @@
       }
     }
 
-    // Live update team names
+    // Keep team‐name display in sync
     team1Input.addEventListener("input", (e) => {
       document.getElementById("team1-name").textContent = e.target.value.trim() || "Team 1";
     });
@@ -848,7 +716,7 @@
     nextRoundBtn.addEventListener("click", nextRound);
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("Wavelength loaded (setup → spectrum source → game)");
+      console.log("Wavelength loaded: Setup → Source → Game");
       updatePromptUI();
     });
   </script>
