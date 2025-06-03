@@ -29,7 +29,26 @@
       min-height: 100vh;
     }
 
-    /* PROMPT SCREEN */
+    /* Hidden by default; we toggle “hidden” class in JS */
+    .hidden { display: none; }
+
+    /* SETUP SCREEN */
+    #setup-screen {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; min-height: 100vh;
+      background: rgba(0,0,0,0.03); padding: 1rem;
+    }
+    .setup-card {
+      background: #FFF;
+      border: 2px solid var(--navy-border);
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%; max-width: 400px;
+      padding: 1.5rem; text-align: center;
+    }
+
+    /* PROMPT SCREEN: choose default vs AI */
     #prompt-screen {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
@@ -43,14 +62,6 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       width: 100%; max-width: 400px;
       padding: 1.5rem; text-align: center;
-    }
-
-    /* SETUP CARD */
-    .setup-card {
-      background: #FFF;
-      border: 2px solid var(--navy-border);
-      border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
     /* SEMI-CIRCLE */
@@ -143,14 +154,63 @@
   </style>
 </head>
 <body>
-  <!-- ===========================================
-       PROMPT SCREEN: choose Default or Generate
-       =========================================== -->
-  <div id="prompt-screen">
-    <div class="prompt-card">
-      <h2 class="text-xl font-bold text-gray-900 mb-2">Wavelength Setup</h2>
+  <!-- ===========================
+       1) SETUP SCREEN (Landing)
+       =========================== -->
+  <div id="setup-screen">
+    <div class="setup-card">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Wavelength</h1>
+      <p class="text-gray-600 mb-4">Game Setup</p>
 
-      <!-- 1) Radio buttons to pick default vs AI -->
+      <div class="space-y-4 mb-6">
+        <div>
+          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
+          <input
+            type="text"
+            id="team1"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            placeholder="Enter team name"
+            value="Team 1"
+          />
+        </div>
+
+        <div>
+          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
+          <input
+            type="text"
+            id="team2"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            placeholder="Enter team name"
+            value="Team 2"
+          />
+        </div>
+
+        <div>
+          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
+          <input
+            type="number"
+            id="points"
+            min="1"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+            value="10"
+          />
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md">
+        Start Game
+      </button>
+    </div>
+  </div>
+
+  <!-- ===========================================
+       2) PROMPT SCREEN: choose Default vs AI
+       =========================================== -->
+  <div id="prompt-screen" class="hidden">
+    <div class="prompt-card">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Spectrums Source</h2>
+
+      <!-- Radio: Default or Generate -->
       <div class="mb-4 text-left">
         <label class="inline-flex items-center mr-4">
           <input
@@ -158,25 +218,24 @@
             name="spectrum-source"
             value="default"
             checked
-            class="form-radio text-indigo-600"
             id="radio-default"
+            class="form-radio text-indigo-600"
           />
           <span class="ml-2 text-gray-700">Use Default Spectrums</span>
         </label>
-
         <label class="inline-flex items-center">
           <input
             type="radio"
             name="spectrum-source"
             value="generate"
-            class="form-radio text-indigo-600"
             id="radio-generate"
+            class="form-radio text-indigo-600"
           />
           <span class="ml-2 text-gray-700">Generate via AI</span>
         </label>
       </div>
 
-      <!-- 2) Only shown if “Generate via AI” is selected -->
+      <!-- If “Generate via AI” is selected -->
       <div id="generate-section" class="mb-4 hidden">
         <p class="text-gray-700 mb-2">Enter a Concept or Idea</p>
         <input
@@ -194,7 +253,7 @@
         <p id="prompt-status" class="mt-2 text-sm text-gray-500 invisible"></p>
       </div>
 
-      <!-- 3) If “Default” is selected, show a single “Use Default” button -->
+      <!-- If “Default” is selected -->
       <div id="default-section" class="mb-1">
         <button
           id="use-default-btn"
@@ -206,60 +265,9 @@
     </div>
   </div>
 
-  <!-- ===========================================
-       SETUP SCREEN (unchanged)
-       =========================================== -->
-  <div id="setup-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen px-4">
-    <div class="setup-card w-full max-w-md p-6 space-y-6">
-      <div class="text-center">
-        <h1 class="text-3xl font-bold text-gray-900">Wavelength</h1>
-        <p class="text-gray-600">Game Setup</p>
-      </div>
-
-      <div class="space-y-4">
-        <div>
-          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
-          <input
-            type="text"
-            id="team1"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
-            placeholder="Enter team name"
-            value="Team 1"
-          />
-        </div>
-
-        <div>
-          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
-          <input
-            type="text"
-            id="team2"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
-            placeholder="Enter team name"
-            value="Team 2"
-          />
-        </div>
-
-        <div>
-          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
-          <input
-            type="number"
-            id="points"
-            min="1"
-            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
-            value="10"
-          />
-        </div>
-      </div>
-
-      <button id="start-btn" class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md">
-        Start Game
-      </button>
-    </div>
-  </div>
-
-  <!-- ===========================================
-       GAME SCREEN (unchanged)
-       =========================================== -->
+  <!-- ===========================
+       3) GAME SCREEN
+       =========================== -->
   <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6">
     <!-- Header -->
     <header class="w-full max-w-xl text-center mb-6">
@@ -387,7 +395,7 @@
   </div>
 
   <script>
-    // 1) Store spectrums (either default or AI)
+    // 1) Default spectra array
     const defaultSpectra = [
       ["Hot","Cold"], ["Good","Evil"], ["Simple","Complex"],
       ["Cheap","Expensive"], ["Safe","Dangerous"], ["Soft","Hard"],
@@ -395,12 +403,13 @@
       ["Tradition","Innovation"], ["Freedom","Security"], ["Bad","Good"]
     ];
 
+    // 2) gameState
     const gameState = {
       team1: { name: "Team 1", score: 0 },
       team2: { name: "Team 2", score: 0 },
       pointsToWin: 10,
       currentTurn: "team1-psychic",
-      currentSpectrum: [],      // will hold either default or AI-generated
+      currentSpectrum: [],      // either default or AI‐generated
       spectrumIndex: 0,
       targetPosition: 0,
       guess: 90,
@@ -409,8 +418,18 @@
       sdScores: { team1: 0, team2: 0 }
     };
 
-    // 2) DOM refs
+    // 3) DOM refs
+    const setupScreen    = document.getElementById("setup-screen");
     const promptScreen   = document.getElementById("prompt-screen");
+    const gameScreen     = document.getElementById("game-screen");
+
+    // Setup refs
+    const startBtn       = document.getElementById("start-btn");
+    const team1Input     = document.getElementById("team1");
+    const team2Input     = document.getElementById("team2");
+    const pointsInput    = document.getElementById("points");
+
+    // Prompt refs
     const radioDefault   = document.getElementById("radio-default");
     const radioGenerate  = document.getElementById("radio-generate");
     const generateSection= document.getElementById("generate-section");
@@ -420,9 +439,7 @@
     const promptStatus   = document.getElementById("prompt-status");
     const useDefaultBtn  = document.getElementById("use-default-btn");
 
-    const setupScreen    = document.getElementById("setup-screen");
-    const gameScreen     = document.getElementById("game-screen");
-    const startBtn       = document.getElementById("start-btn");
+    // Game refs
     const hideTargetBtn  = document.getElementById("hide-target-btn");
     const activeSlider   = document.getElementById("active-horizontal-slider");
     const lockGuessBtn   = document.getElementById("lock-guess-btn");
@@ -443,10 +460,10 @@
     const roundResult    = document.getElementById("round-result");
     const guessMarker    = document.getElementById("guess-marker");
 
-    // 3) Backend URL (no trailing slash)
+    // 4) Backend URL (no trailing slash)
     const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app";
 
-    // 4) Show/hide the “Generate via AI” vs “Default” UI blocks
+    // 5) Toggle “Generate via AI” ↔ “Use Default” UI
     function updatePromptUI() {
       if (radioGenerate.checked) {
         generateSection.classList.remove("hidden");
@@ -459,7 +476,7 @@
     radioDefault.addEventListener("change", updatePromptUI);
     radioGenerate.addEventListener("change", updatePromptUI);
 
-    // 5) Function to call backend
+    // 6) Fetch function for AI path
     async function fetchSpectrums(idea, count = 30) {
       const url = `${BACKEND_URL}/api/generateSpectrums`;
       console.log("→ Fetching from:", url, "body:", { idea, count });
@@ -479,7 +496,7 @@
       return payload;
     }
 
-    // 6) Handle “Generate via AI” button click
+    // 7) “Generate via AI” button logic
     generateBtn.addEventListener("click", async () => {
       const idea = ideaInput.value.trim();
       if (!idea) {
@@ -488,7 +505,6 @@
         promptStatus.classList.add("text-red-500");
         return;
       }
-
       promptStatus.textContent = "Generating spectrums…";
       promptStatus.classList.remove("invisible", "text-red-500", "text-green-600");
       promptStatus.classList.add("text-gray-500");
@@ -499,15 +515,13 @@
         if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
           throw new Error("Invalid or insufficient spectrums returned");
         }
-
         gameState.currentSpectrum = data.spectrums;
         promptStatus.textContent = "Spectrums generated!";
         promptStatus.classList.remove("text-gray-500", "text-red-500");
         promptStatus.classList.add("text-green-600");
-
         setTimeout(() => {
           promptScreen.classList.add("hidden");
-          setupScreen.classList.remove("hidden");
+          gameScreen.classList.remove("hidden");
         }, 500);
       } catch (err) {
         console.error("❌ Generation error:", err);
@@ -518,20 +532,18 @@
       }
     });
 
-    // 7) Handle “Use Default Spectrums” click
+    // 8) “Use Default Spectrums” button logic
     useDefaultBtn.addEventListener("click", () => {
-      // Copy the built-in array into gameState.currentSpectrum
       gameState.currentSpectrum = defaultSpectra.slice();
       promptScreen.classList.add("hidden");
-      setupScreen.classList.remove("hidden");
+      gameScreen.classList.remove("hidden");
     });
 
-    // 8) All game logic functions (as before) must appear here:
-
-    function initGame() {
-      gameState.team1.name  = document.getElementById("team1").value.trim() || "Team 1";
-      gameState.team2.name  = document.getElementById("team2").value.trim() || "Team 2";
-      gameState.pointsToWin = parseInt(document.getElementById("points").value, 10) || 10;
+    // 9) “Start Game” from Setup screen
+    startBtn.addEventListener("click", () => {
+      gameState.team1.name  = team1Input.value.trim() || "Team 1";
+      gameState.team2.name  = team2Input.value.trim() || "Team 2";
+      gameState.pointsToWin = parseInt(pointsInput.value, 10) || 10;
 
       gameState.team1.score = 0;
       gameState.team2.score = 0;
@@ -545,25 +557,35 @@
       team2Score.textContent  = "0";
       targetScoreEl.textContent = gameState.pointsToWin;
 
+      // Hide Setup, show Spectrum Source screen
       setupScreen.classList.add("hidden");
-      gameScreen.classList.remove("hidden");
-      gameState.isPlaying = true;
+      promptScreen.classList.remove("hidden");
+      updatePromptUI();
+    });
 
+    // 10) All game logic functions follow...
+
+    function initGame() {
+      // Not needed here because we already set things right before showing gameScreen
       startNewRound();
     }
 
     function startNewRound() {
       roundResult.textContent = "";
 
-      const [leftWord, rightWord] = gameState.currentSpectrum[gameState.spectrumIndex % gameState.currentSpectrum.length];
+      // Cycle through whichever array was chosen
+      const arr = gameState.currentSpectrum;
+      const [leftWord, rightWord] = arr[gameState.spectrumIndex % arr.length];
       gameState.spectrumIndex++;
 
       leftConcept.textContent  = leftWord;
       rightConcept.textContent = rightWord;
 
+      // Random target center [4°, 176°]
       gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
       gameState.guess = 90;
 
+      // Build 40° conic gradient
       const center    = gameState.targetPosition;
       const bandStart = center - 20;
       const fromAngle = bandStart + 270;
@@ -584,6 +606,7 @@
       updateNeedle(90);
       activeSlider.style.display = "none";
 
+      // Alternate Psychic
       if (
         gameState.currentTurn === "team2-opponent" ||
         gameState.currentTurn === "team2-guess"   ||
@@ -810,15 +833,14 @@
     }
 
     // Live update team names
-    document.getElementById("team1").addEventListener("input", (e) => {
-      team1NameEl.textContent = e.target.value.trim() || "Team 1";
+    team1Input.addEventListener("input", (e) => {
+      document.getElementById("team1-name").textContent = e.target.value.trim() || "Team 1";
     });
-    document.getElementById("team2").addEventListener("input", (e) => {
-      team2NameEl.textContent = e.target.value.trim() || "Team 2";
+    team2Input.addEventListener("input", (e) => {
+      document.getElementById("team2-name").textContent = e.target.value.trim() || "Team 2";
     });
 
-    // Attach event listeners for game flow
-    startBtn.addEventListener("click", initGame);
+    // Attach game‐flow listeners
     hideTargetBtn.addEventListener("click", hideTarget);
     lockGuessBtn.addEventListener("click", lockGuess);
     chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
@@ -826,7 +848,7 @@
     nextRoundBtn.addEventListener("click", nextRound);
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("Wavelength loaded (default vs AI option available)");
+      console.log("Wavelength loaded (setup → spectrum source → game)");
       updatePromptUI();
     });
   </script>
