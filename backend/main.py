@@ -1,17 +1,22 @@
 import os
 import json
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from google.ai.generativelanguage import GenerativeLanguageServiceClient
-from google.ai.generativelanguage.types import TextPrompt, GenerateTextRequest
+import google.generativeai as genai
 from dotenv import load_dotenv
 
 load_dotenv()
 
+# Configure genai with your API key
+API_KEY = os.getenv("GENAI_API_KEY")
+if not API_KEY:
+    raise RuntimeError("Please set GENAI_API_KEY in your environment or .env file")
+genai.configure(api_key=API_KEY)
+
 app = FastAPI()
 
-# Allow CORS from anywhere (adjust origins as needed)
+# Allow CORS from all origins (adjust in production to your frontend domain)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -19,9 +24,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_URI = "gemini-2.5-flash-preview-05-20"
-
-client = GenerativeLanguageServiceClient()
+# Instantiate a GenerativeModel from genai
+model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
 class SpectrumRequest(BaseModel):
     idea: str
@@ -31,11 +35,12 @@ class SpectrumRequest(BaseModel):
 async def generate_spectrums(req: SpectrumRequest):
     idea = req.idea.strip()
     count = req.count
+
     if not idea:
         raise HTTPException(status_code=400, detail="Missing 'idea'")
     if count < 1 or count > 100:
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
-    
+
     prompt_text = f"""
 Given the concept: "{idea}"
 Return exactly {count} opposite-end word pairs suitable for a Wavelength spectrum, be creative and fun/funny.
@@ -52,17 +57,15 @@ Do not include any extra text or commentary—only the JSON array.
 """.strip()
 
     try:
-        # Call Gemini
-        request = GenerateTextRequest(
-            model=MODEL_URI,
-            prompt=TextPrompt(text=prompt_text),
-            temperature=0.7,
+        # Use genai to generate text
+        response = model.generate_text(
+            prompt=prompt_text,
+            temperature=0.85,
             max_output_tokens=1024
         )
-        response = client.generate_text(request=request)
-        generated = response.candidates[0].output
+        generated = response.text  # The raw text output from Gemini
 
-        # Attempt to parse the top‐level JSON array
+        # Parse the JSON array from the model output
         spectrums = json.loads(generated)
         if (
             not isinstance(spectrums, list)
@@ -81,10 +84,14 @@ Do not include any extra text or commentary—only the JSON array.
         print("Error generating/parsing spectrums:", e)
         raise HTTPException(status_code=500, detail="Failed to generate spectrums")
 
-    # Return exactly 'count' pairs (truncate if too many)
-    return {"spectrums": [[p["left"].strip(), p["right"].strip()] for p in spectrums[:count]]}
+    # Return exactly `count` pairs (truncate if Gemini returned extras)
+    return {
+        "spectrums": [
+            [p["left"].strip(), p["right"].strip()] 
+            for p in spectrums[:count]
+        ]
+    }
 
-# If Koyeb uses PORT env var:
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8080))
