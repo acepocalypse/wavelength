@@ -58,16 +58,26 @@ Output a JSON array of length {count}, for example:
 Do not include any extra text or commentary—only the JSON array.
 """.strip()
     
-    generation_config = types.GenerateContentConfig(
-        max_output_tokens=1024,
-        temperature=1.25
-    )
+    # generation_config = types.GenerateContentConfig(
+    #     max_output_tokens=1024,
+    #     temperature=1.25
+    # )
         
     try:
         response = client.models.generate_content(
-        model="gemini-2.5-flash-preview-05-20", contents=prompt_text,
-        generation_config=generation_config
+            model="gemini-2.5-flash-preview-05-20",
+            contents=prompt_text,
+            config=types.GenerateContentConfig(
+                max_output_tokens=1024,
+                temperature=1.25
+            )
         )
+
+        # response = client.models.generate_content(
+        # model="gemini-2.5-flash-preview-05-20", contents=prompt_text,
+        # generation_config=generation_config
+        # )
+        
         # response = model.generate_content(
         #     contents=prompt_text,
         #     generation_config=generation_config
