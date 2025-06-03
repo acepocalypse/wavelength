@@ -38,7 +38,7 @@
       position: relative;
       width: 100%;
       height: var(--container-height);
-      background-color: var(--cream-bg);
+      background-color: white; /* Change from cream-bg to white */
       border: var(--border-thickness) solid var(--navy-border);
       border-bottom: none;
       border-top-left-radius: var(--radius);
@@ -46,7 +46,6 @@
       overflow: hidden;
       box-sizing: border-box;
       box-shadow: inset 0px 4px 10px rgba(0,0,0,0.05);
-}
     }
     .target-overlay {
       position: absolute;
@@ -56,6 +55,7 @@
       height: 100%;
       pointer-events: none;
       z-index: 2;
+      opacity: 0.85; /* Add opacity to make target more visible */
       background: transparent;
     }
     .guess-marker {
