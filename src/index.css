@@ -1,7 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* Custom scrollbar for fun */
-::-webkit-scrollbar { @apply w-2 bg-transparent; }
-::-webkit-scrollbar-thumb { @apply bg-indigo-400/50 rounded-full; }
