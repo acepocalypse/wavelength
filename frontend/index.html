@@ -132,7 +132,7 @@
   </div>
 
   <!-- Spectrum Source Screen -->
-  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen">
+  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen px-4">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h2 class="text-2xl font-bold mb-4">Choose Spectrum Source</h2>
       <div class="mb-4 text-left">
@@ -214,13 +214,13 @@
         </button>
       </div>
 
-      <div id="guesser-controls" class="hidden flex flex-col items-center">
+      <div id="guesser-controls" class="hidden flex flex-col items-center w-full">
         <div class="horizontal-slider-container w-full">
           <input id="active-horizontal-slider" type="range" min="0" max="180" value="90" class="w-full"/>
         </div>
-        <div class="mt-6">
+        <div class="mt-6 w-full">
           <button id="lock-guess-btn"
-                  class="w-full py-4 px-6 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700">
+                  class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700">
             Lock In Guess
           </button>
         </div>
@@ -248,25 +248,25 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-sm">
+    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-4 w-full max-w-sm">
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
-          <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
-          <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
+          <h3 id="team1-name" class="text-sm sm:text-base font-medium text-gray-700">Team 1</h3>
+          <p id="team1-score-display" class="text-xl sm:text-2xl font-bold text-blue-600">0</p>
         </div>
         <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
-          <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
-          <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
+          <h3 id="team2-name" class="text-sm sm:text-base font-medium text-gray-700">Team 2</h3>
+          <p id="team2-score-display" class="text-xl sm:text-2xl font-bold text-red-600">0</p>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
         <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0 text-center">
-          <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
-          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
+          <h3 class="text-sm sm:text-base font-medium text-gray-700">Current Turn</h3>
+          <p id="current-turn" class="text-base sm:text-lg font-semibold text-gray-900">Team 1 Psychic</p>
         </div>
         <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg text-center">
-          <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
-          <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
+          <h3 class="text-sm sm:text-base font-medium text-gray-700">Target Score</h3>
+          <p id="target-score" class="text-base sm:text-lg font-semibold text-gray-900">10</p>
         </div>
       </div>
       <div>
