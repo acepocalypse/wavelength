@@ -1,574 +1,688 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wavelength Online</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6366F1',
-                        secondary: '#818CF8',
-                        spectrum: {
-                            start: '#F87171',  // Red
-                            end: '#60A5FA'     // Blue
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        .spectrum-grad {
-            background: linear-gradient(to right, #F87171, #60A5FA);
-        }
-        .slider-container {
-            position: relative;
-            width: 100%;
-            height: 4px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            margin-top: 2rem;
-            margin-bottom: 1.5rem;
-        }
-        .slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 4px;
-            outline: none;
-            background: transparent;
-            position: absolute;
-            top: -3px;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2px solid #6366F1;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .device-target {
-            position: absolute;
-            height: 140%;
-            width: 4px;
-            top: -20%;
-            background: #6366F1;
-            transform: translateX(-50%);
-        }
-        .guess-marker {
-            position: absolute;
-            top: 0;
-            transform: translate(-50%, -50%);
-            height: 34px;
-            width: 34px;
-            border-radius: 50%;
-            background: white;
-            border: 3px solid #8B5CF6;
-            box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.2), 0 4px 6px -2px rgba(139, 92, 246, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .guess-marker i {
-            color: #8B5CF6;
-            font-size: 14px;
-        }
-        .target-zone {
-            position: absolute;
-            height: 100%;
-            top: 0;
-            border-radius: 4px;
-            background: rgba(139, 92, 246, 0.4);
-            z-index: 1;
-        }
-        .fade-enter {
-            opacity: 0;
-        }
-        .fade-enter-active {
-            opacity: 1;
-            transition: opacity 300ms;
-        }
-        .fade-exit {
-            opacity: 1;
-        }
-        .fade-exit-active {
-            opacity: 0;
-            transition: opacity 300ms;
-        }
-        .spectrum-transition {
-            transition: color 0.5s ease;
-        }
-        .clue-text {
-            font-family: 'Georgia', serif;
-            font-style: italic;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wavelength (Responsive &amp; Tidy with Fixed End Conditions)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --cream-bg: #F3EEE9;
+      --navy-border: #1E293B;
+      --yellow: #FBBF24;
+      --red: #F87171;
+      --blue: #60A5FA;
+      --needle-color: #5FC7B7;
+      --pivot-color: #E63946;
+      --border-thickness: 8px; /* mobile */
+      --radius: 100px;         /* mobile */
+      --full-width: calc(var(--radius) * 2);
+      --half-height: var(--radius);
+      --container-height: calc(var(--half-height) + var(--border-thickness));
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ECECEC;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Setup card */
+    .setup-card {
+      background: #FFFFFF;
+      border: 2px solid var(--navy-border);
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Semicircle */
+    .slider-container {
+      position: relative;
+      width: 100%;
+      max-width: var(--full-width);
+      height: var(--container-height);
+      margin: 0 auto 1rem;
+    }
+
+    .semi-circle {
+      position: relative;
+      width: 100%;
+      height: var(--container-height);
+      background-color: var(--cream-bg);
+      border: var(--border-thickness) solid var(--navy-border);
+      border-bottom: none;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .target-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      background: transparent;
+    }
+
+    .guess-marker {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      height: calc(var(--half-height) + var(--border-thickness));
+      transform-origin: bottom center;
+      z-index: 3;
+    }
+
+    .needle-stick {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      height: calc(var(--half-height) * 0.9);
+      background-color: var(--needle-color);
+      border-radius: 2px 2px 0 0;
+      transform: translateX(-50%);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 4;
+    }
+
+    .needle-base {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 24px;
+      height: 24px;
+      background-color: var(--pivot-color);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      z-index: 5;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background-color: var(--navy-border);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background-color: #16202E;
+    }
+    .btn-secondary {
+      background-color: #8B5CF6; /* purple */
+      color: #FFFFFF;
+    }
+    .btn-secondary:hover {
+      background-color: #7A4EE6;
+    }
+    .btn-contrast {
+      background-color: var(--green-600, #22C55E);
+      color: #FFFFFF;
+    }
+    .btn-contrast:hover {
+      background-color: #16A34A;
+    }
+
+    /* Mobile adjustments */
+    @media (min-width: 640px) {
+      :root {
+        --border-thickness: 12px;
+        --radius: 120px;
+        --full-width: calc(var(--radius) * 2);
+        --half-height: var(--radius);
+        --container-height: calc(var(--half-height) + var(--border-thickness));
+      }
+    }
+
+    @media (min-width: 1024px) {
+      :root {
+        --border-thickness: 16px;
+        --radius: 150px;
+        --full-width: calc(var(--radius) * 2);
+        --half-height: var(--radius);
+        --container-height: calc(var(--half-height) + var(--border-thickness));
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen font-sans flex flex-col">
-    <!-- Setup Screen -->
-    <div id="setup-screen" class="flex-1 flex items-center justify-center px-4">
-        <div class="max-w-md w-full bg-white rounded-xl shadow-xl p-8 space-y-6">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold text-gray-900 mb-1">Wavelength</h1>
-                <p class="text-gray-500 text-lg">Game Setup</p>
-            </div>
-            
-            <div class="space-y-5">
-                <div>
-                    <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
-                    <input 
-                        type="text" 
-                        id="team1" 
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition"
-                        placeholder="Enter team name"
-                        value="Team 1">
-                </div>
-                
-                <div>
-                    <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
-                    <input 
-                        type="text" 
-                        id="team2" 
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition"
-                        placeholder="Enter team name"
-                        value="Team 2">
-                </div>
-                
-                <div>
-                    <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
-                    <input 
-                        type="number" 
-                        id="points" 
-                        min="1"
-                        class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition"
-                        value="10">
-                </div>
-            </div>
-            
-            <button id="start-btn" class="w-full bg-primary hover:bg-secondary text-white py-3 px-6 rounded-xl font-semibold text-lg transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg">
-                Start Game
-                <i class="fas fa-play ml-2"></i>
-            </button>
+<body>
+  <!-- SETUP SCREEN -->
+  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen px-4">
+    <div class="setup-card w-full max-w-md p-6 space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900">Wavelength</h1>
+        <p class="text-gray-600">Game Setup</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
+          <input
+            type="text"
+            id="team1"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
+            placeholder="Enter team name"
+            value="Team 1"
+          />
         </div>
+
+        <div>
+          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
+          <input
+            type="text"
+            id="team2"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
+            placeholder="Enter team name"
+            value="Team 2"
+          />
+        </div>
+
+        <div>
+          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
+          <input
+            type="number"
+            id="points"
+            min="1"
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-base text-sm"
+            value="10"
+          />
+        </div>
+      </div>
+
+      <button id="start-btn" class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md">
+        Start Game
+      </button>
     </div>
-    
-    <!-- Game Screen (initially hidden) -->
-    <div id="game-screen" class="hidden flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-8">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 tracking-tight">Wavelength</h1>
-        </header>
-        
-        <!-- Main game content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Spectrum Display -->
-            <div class="mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <div id="left-concept" class="text-2xl font-bold text-left spectrum-transition text-red-500">Hot</div>
-                    <div id="right-concept" class="text-2xl font-bold text-right spectrum-transition text-blue-500">Cold</div>
-                </div>
-                
-                <div class="relative">
-                    <!-- Spectrum bar -->
-                    <div class="h-4 w-full spectrum-grad rounded-full"></div>
-                    
-                    <!-- Device/Target Area -->
-                    <div class="relative">
-                        <div class="slider-container">
-                            <div id="target-zone" class="target-zone"></div>
-                            <div id="guess-marker" class="guess-marker">
-                                <i class="fas fa-bullseye"></i>
-                            </div>
-                            <input 
-                                type="range" 
-                                min="0" 
-                                max="100" 
-                                value="50" 
-                                class="slider" 
-                                id="guess-slider">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Clue Area -->
-            <div id="clue-section" class="bg-purple-50 rounded-xl p-5 mb-8 shadow-sm min-h-[120px] flex items-center justify-center">
-                <div class="text-center">
-                    <h2 class="text-lg font-medium text-gray-500 mb-1">Current Clue</h2>
-                    <p id="clue-display" class="text-2xl font-semibold text-gray-800 clue-text">Waiting for clue...</p>
-                </div>
-            </div>
-            
-            <!-- Controls Panel -->
-            <div id="controls-panel" class="mb-8">
-                <div id="psychic-controls" class="hidden">
-                    <div class="flex flex-col space-y-4">
-                        <input 
-                            type="text" 
-                            id="clue-input" 
-                            class="w-full px-5 py-4 rounded-xl border border-gray-300 text-xl focus:ring-2 focus:ring-primary focus:border-primary transition"
-                            placeholder="Enter your clue">
-                        <button id="give-clue-btn" class="bg-primary hover:bg-secondary text-white py-4 px-8 rounded-xl font-semibold text-lg transition">
-                            Give Clue
-                        </button>
-                    </div>
-                </div>
-                
-                <div id="guesser-controls" class="hidden flex justify-center">
-                    <button id="lock-guess-btn" class="bg-purple-600 hover:bg-purple-700 text-white py-4 px-10 rounded-xl font-semibold text-lg transition">
-                        Lock In Guess
-                    </button>
-                </div>
-                
-                <div id="reveal-controls" class="hidden flex justify-center">
-                    <button id="reveal-btn" class="bg-blue-600 hover:bg-blue-700 text-white py-4 px-10 rounded-xl font-semibold text-lg transition">
-                        Reveal Target
-                    </button>
-                </div>
-                
-                <div id="next-round-controls" class="hidden flex flex-col items-center space-y-4">
-                    <div id="round-result" class="text-xl font-semibold text-center py-3 px-6 rounded-lg bg-opacity-20 bg-green-500 text-green-700 mb-2">
-                        <!-- Result text will go here -->
-                    </div>
-                    <button id="next-round-btn" class="bg-green-600 hover:bg-green-700 text-white py-4 px-10 rounded-xl font-semibold text-lg transition">
-                        Next Round
-                    </button>
-                </div>
-            </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6">
+    <!-- Header -->
+    <header class="w-full max-w-xl text-center mb-6">
+      <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
+    </header>
+
+    <!-- Spectrum & Needle -->
+    <div class="w-full max-w-xs">
+      <div class="slider-container">
+        <div class="semi-circle">
+          <div id="target-overlay" class="target-overlay"></div>
+          <div id="guess-marker" class="guess-marker">
+            <div class="needle-stick"></div>
+            <div class="needle-base"></div>
+          </div>
         </div>
-        
-        <!-- Game Information Panel -->
-        <div class="bg-white rounded-xl p-6 shadow-md">
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div class="text-center bg-blue-50 p-4 rounded-lg">
-                    <h3 id="team1-name" class="text-sm font-medium text-blue-800">Team 1</h3>
-                    <p class="text-2xl font-bold text-blue-600">0</p>
-                </div>
-                <div class="text-center bg-red-50 p-4 rounded-lg">
-                    <h3 id="team2-name" class="text-sm font-medium text-red-800">Team 2</h3>
-                    <p class="text-2xl font-bold text-red-600">0</p>
-                </div>
-            </div>
-            
-            <div class="flex flex-wrap gap-4">
-                <div class="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-sm font-medium text-gray-600">Current Turn</h3>
-                    <p id="current-turn" class="text-lg font-semibold text-gray-800">Team 1 Psychic</p>
-                </div>
-                
-                <div class="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-lg">
-                    <h3 class="text-sm font-medium text-gray-600">Target Score</h3>
-                    <p id="target-score" class="text-lg font-semibold text-gray-800">10</p>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <div id="message-area" class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700">
-                    Game will begin when Psychic enters a clue
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <script>
-        // Game state management
-        const gameState = {
-            team1: {
-                name: "Team 1",
-                score: 0
-            },
-            team2: {
-                name: "Team 2",
-                score: 0
-            },
-            pointsToWin: 10,
-            currentTurn: "team1-psychic", // team1-psychic, team1-guesser, team2-psychic, team2-guesser
-            currentSpectrum: ["Hot", "Cold"],
-            targetPosition: 0, // Between 0-100
-            targetWidth: 15, // Width of the target zone
-            clue: "",
-            guess: 50,
-            spectra: [
-                ["Hot", "Cold"],
-                ["Good", "Evil"],
-                ["Simple", "Complex"],
-                ["Cheap", "Expensive"],
-                ["Safe", "Dangerous"],
-                ["Soft", "Hard"],
-                ["Rare", "Common"],
-                ["Quiet", "Loud"],
-                ["Weak", "Strong"],
-                ["Tradition", "Innovation"],
-                ["Freedom", "Security"],
-                ["Bad", "Good"]
-            ],
-            isPlaying: false,
-            roundResults: ""
-        };
+    <!-- Labels -->
+    <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-4 px-2">
+      <div id="left-concept" class="text-red-500">Hot</div>
+      <div id="right-concept" class="text-blue-500">Cold</div>
+    </div>
 
-        // DOM references
-        const setupScreen = document.getElementById('setup-screen');
-        const gameScreen = document.getElementById('game-screen');
-        const startBtn = document.getElementById('start-btn');
-        const clueInput = document.getElementById('clue-input');
-        const clueDisplay = document.getElementById('clue-display');
-        const leftConcept = document.getElementById('left-concept');
-        const rightConcept = document.getElementById('right-concept');
-        const targetZone = document.getElementById('target-zone');
-        const guessMarker = document.getElementById('guess-marker');
-        const guessSlider = document.getElementById('guess-slider');
-        const team1Score = document.querySelector('#game-screen > div:nth-child(5) > div > div:nth-child(1) > p');
-        const team2Score = document.querySelector('#game-screen > div:nth-child(5) > div > div:nth-child(2) > p');
-        const team1NameEl = document.getElementById('team1-name');
-        const team2NameEl = document.getElementById('team2-name');
-        const targetScore = document.getElementById('target-score');
-        const currentTurn = document.getElementById('current-turn');
-        const messageArea = document.getElementById('message-area');
-        const psychicControls = document.getElementById('psychic-controls');
-        const guesserControls = document.getElementById('guesser-controls');
-        const revealControls = document.getElementById('reveal-controls');
-        const nextRoundControls = document.getElementById('next-round-controls');
-        const roundResult = document.getElementById('round-result');
-        const giveClueBtn = document.getElementById('give-clue-btn');
-        const lockGuessBtn = document.getElementById('lock-guess-btn');
-        const revealBtn = document.getElementById('reveal-btn');
-        const nextRoundBtn = document.getElementById('next-round-btn');
+    <!-- Instructions -->
+    <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md"></div>
 
-        // Initialize game
-        function initGame() {
-            // Get setup values
-            gameState.team1.name = document.getElementById('team1').value || "Team 1";
-            gameState.team2.name = document.getElementById('team2').value || "Team 2";
-            gameState.pointsToWin = parseInt(document.getElementById('points').value) || 10;
-            
-            // Reset scores
-            gameState.team1.score = 0;
-            gameState.team2.score = 0;
-            
-            // Update UI
-            team1NameEl.textContent = gameState.team1.name;
-            team2NameEl.textContent = gameState.team2.name;
-            team1Score.textContent = "0";
-            team2Score.textContent = "0";
-            targetScore.textContent = gameState.pointsToWin;
-            
-            // Switch screens
-            setupScreen.classList.add('hidden');
-            gameScreen.classList.remove('hidden');
-            
-            // Start the game
-            gameState.isPlaying = true;
-            
-            // Start first round
+    <!-- Controls -->
+    <div class="w-full max-w-md space-y-4">
+      <!-- Psychic Controls -->
+      <div id="psychic-controls" class="hidden">
+        <button
+          id="hide-target-btn"
+          class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+        >
+          Hide Target &amp; Pass to Guessers
+        </button>
+      </div>
+
+      <!-- Guesser Controls -->
+      <div id="guesser-controls" class="hidden flex flex-col items-center">
+        <div class="horizontal-slider-container w-full">
+          <input
+            type="range"
+            min="0"
+            max="180"
+            value="90"
+            id="active-horizontal-slider"
+            class="horizontal-slider w-full"
+          />
+        </div>
+        <button
+          id="lock-guess-btn"
+          class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+        >
+          Lock In Guess
+        </button>
+      </div>
+
+      <!-- Opponent Controls -->
+      <div id="opponent-controls" class="hidden flex space-x-2">
+        <button
+          id="choose-left-btn"
+          class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
+        >
+          Left of Target
+        </button>
+        <button
+          id="choose-right-btn"
+          class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
+        >
+          Right of Target
+        </button>
+      </div>
+
+      <!-- Next Round Controls -->
+      <div id="next-round-controls" class="hidden flex flex-col items-center">
+        <div
+          id="round-result"
+          class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full"
+        ></div>
+        <button
+          id="next-round-btn"
+          class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
+        >
+          Next Round
+        </button>
+      </div>
+    </div>
+
+    <!-- Scoreboard & Info -->
+    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
+          <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
+          <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
+        </div>
+        <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
+          <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
+          <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
+        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
+          <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
+          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
+        </div>
+        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
+          <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
+          <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
+        </div>
+      </div>
+
+      <div>
+        <div
+          id="message-area"
+          class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base"
+        >
+          Game will begin when you press “Hide Target &amp; Pass to Guessers.”
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const gameState = {
+      team1: { name: "Team 1", score: 0 },
+      team2: { name: "Team 2", score: 0 },
+      pointsToWin: 10,
+      currentTurn: "team1-psychic",
+      currentSpectrum: ["Hot", "Cold"],
+      targetPosition: 0,
+      guess: 90,
+      spectra: [
+        ["Hot","Cold"],["Good","Evil"],["Simple","Complex"],
+        ["Cheap","Expensive"],["Safe","Dangerous"],["Soft","Hard"],
+        ["Rare","Common"],["Quiet","Loud"],["Weak","Strong"],
+        ["Tradition","Innovation"],["Freedom","Security"],["Bad","Good"]
+      ],
+      isPlaying: false,
+      suddenDeath: false,
+      sdScores: { team1: 0, team2: 0 }
+    };
+
+    // DOM refs
+    const setupScreen      = document.getElementById("setup-screen");
+    const gameScreen       = document.getElementById("game-screen");
+    const startBtn         = document.getElementById("start-btn");
+    const hideTargetBtn    = document.getElementById("hide-target-btn");
+    const activeSlider     = document.getElementById("active-horizontal-slider");
+    const lockGuessBtn     = document.getElementById("lock-guess-btn");
+    const chooseLeftBtn    = document.getElementById("choose-left-btn");
+    const chooseRightBtn   = document.getElementById("choose-right-btn");
+    const nextRoundBtn     = document.getElementById("next-round-btn");
+    const targetOverlay    = document.getElementById("target-overlay");
+    const leftConcept      = document.getElementById("left-concept");
+    const rightConcept     = document.getElementById("right-concept");
+    const instructionText  = document.getElementById("instruction-text");
+    const messageArea      = document.getElementById("message-area");
+    const team1Score       = document.getElementById("team1-score-display");
+    const team2Score       = document.getElementById("team2-score-display");
+    const team1NameEl      = document.getElementById("team1-name");
+    const team2NameEl      = document.getElementById("team2-name");
+    const targetScoreEl    = document.getElementById("target-score");
+    const currentTurnEl    = document.getElementById("current-turn");
+    const roundResult      = document.getElementById("round-result");
+    const guessMarker      = document.getElementById("guess-marker");
+
+    function initGame() {
+      gameState.team1.name  = document.getElementById("team1").value.trim() || "Team 1";
+      gameState.team2.name  = document.getElementById("team2").value.trim() || "Team 2";
+      gameState.pointsToWin = parseInt(document.getElementById("points").value, 10) || 10;
+
+      gameState.team1.score = 0;
+      gameState.team2.score = 0;
+      gameState.suddenDeath = false;
+      gameState.sdScores = { team1: 0, team2: 0 };
+
+      team1NameEl.textContent = gameState.team1.name;
+      team2NameEl.textContent = gameState.team2.name;
+      team1Score.textContent  = "0";
+      team2Score.textContent  = "0";
+      targetScoreEl.textContent = gameState.pointsToWin;
+
+      setupScreen.classList.add("hidden");
+      gameScreen.classList.remove("hidden");
+      gameState.isPlaying = true;
+
+      startNewRound();
+    }
+
+    function startNewRound() {
+      roundResult.textContent = "";
+
+      const idx = Math.floor(Math.random() * gameState.spectra.length);
+      gameState.currentSpectrum = gameState.spectra[idx];
+
+      gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
+      gameState.guess = 90;
+
+      leftConcept.textContent  = gameState.currentSpectrum[0];
+      rightConcept.textContent = gameState.currentSpectrum[1];
+
+      const center    = gameState.targetPosition;
+      const bandStart = center - 20;
+      const fromAngle = bandStart + 270;
+      const gradient = `
+        conic-gradient(
+          from ${fromAngle}deg at 50% 100%,
+          #FBBF24 0deg   8deg,
+          #F87171 8deg  16deg,
+          #60A5FA 16deg 24deg,
+          #F87171 24deg 32deg,
+          #FBBF24 32deg 40deg,
+          transparent 40deg 180deg
+        )
+      `;
+      targetOverlay.style.background = gradient;
+      targetOverlay.style.display    = "block";
+
+      updateNeedle(90);
+      activeSlider.style.display = "none";
+
+      if (
+        gameState.currentTurn === "team2-opponent" ||
+        gameState.currentTurn === "team2-guess"   ||
+        gameState.currentTurn === "team2-psychic"
+      ) {
+        gameState.currentTurn = "team1-psychic";
+        currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
+      } else {
+        gameState.currentTurn = "team2-psychic";
+        currentTurnEl.textContent = `${gameState.team2.name} Psychic`;
+      }
+
+      if (!gameState.suddenDeath) {
+        instructionText.textContent = `${
+          gameState.currentTurn.includes("team1")
+            ? gameState.team1.name
+            : gameState.team2.name
+        } Psychic: View the target.`;
+        messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
+      } else {
+        instructionText.textContent = `${
+          gameState.currentTurn.includes("team1")
+            ? gameState.team1.name
+            : gameState.team2.name
+        } Psychic (Sudden Death): View the target.`;
+        messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
+      }
+
+      updateControlsVisibility();
+    }
+
+    function hideTarget() {
+      targetOverlay.style.display = "none";
+
+      if (gameState.currentTurn === "team1-psychic") {
+        gameState.currentTurn = "team1-guess";
+        currentTurnEl.textContent = `${gameState.team1.name} Guessing`;
+        instructionText.textContent = `${gameState.team1.name} Guess: Place your guess.`;
+      } else {
+        gameState.currentTurn = "team2-guess";
+        currentTurnEl.textContent = `${gameState.team2.name} Guessing`;
+        instructionText.textContent = `${gameState.team2.name} Guess: Place your guess.`;
+      }
+
+      activeSlider.style.display = "block";
+      activeSlider.value = 90;
+      updateNeedle(90);
+
+      messageArea.textContent = "Adjust slider & press “Lock In Guess.”";
+      updateControlsVisibility();
+    }
+
+    function updateNeedle(deg) {
+      gameState.guess = deg;
+      const adjusted = deg - 90;
+      guessMarker.style.transform = `translateX(-50%) rotate(${adjusted}deg)`;
+    }
+
+    activeSlider.addEventListener("input", (e) => {
+      const v = parseInt(e.target.value, 10);
+      updateNeedle(v);
+    });
+
+    function lockGuess() {
+      if (gameState.currentTurn === "team1-guess") {
+        gameState.currentTurn = "team1-opponent";
+        currentTurnEl.textContent = `${gameState.team2.name} Opponent Decision`;
+        instructionText.textContent = `${gameState.team2.name}: Left or Right of target?`;
+      } else {
+        gameState.currentTurn = "team2-opponent";
+        currentTurnEl.textContent = `${gameState.team1.name} Opponent Decision`;
+        instructionText.textContent = `${gameState.team1.name}: Left or Right of target?`;
+      }
+      messageArea.textContent = "Choose Left or Right.";
+      updateControlsVisibility();
+    }
+
+    function opponentChoice(side) {
+      const guessed = gameState.guess;
+      const actual  = gameState.targetPosition;
+      const diff    = Math.abs(guessed - actual);
+
+      let pPts = 0;
+      if (diff <= 4)       pPts = 4;
+      else if (diff <= 12) pPts = 3;
+      else if (diff <= 20) pPts = 2;
+      else                 pPts = 0;
+
+      let psychicTeam, oppTeam;
+      if (gameState.currentTurn === "team1-opponent") {
+        psychicTeam = "team2";
+        oppTeam     = "team1";
+      } else {
+        psychicTeam = "team1";
+        oppTeam     = "team2";
+      }
+
+      let resultText = "";
+      if (!gameState.suddenDeath) {
+        if (pPts > 0) {
+          gameState[psychicTeam].score += pPts;
+          resultText = `${gameState[psychicTeam].name} scores ${pPts} point${pPts>1?"s":""}!`;
+        } else {
+          resultText = `${gameState[psychicTeam].name} scores 0 points.`;
+        }
+
+        if (pPts < 4) {
+          const isLeftGuess = guessed < actual;
+          const correctSide = isLeftGuess ? "left" : "right";
+          if (side === correctSide) {
+            gameState[oppTeam].score += 1;
+            resultText += ` ${gameState[oppTeam].name} guessed correctly and gains 1 point!`;
+          }
+        }
+
+        team1Score.textContent = gameState.team1.score;
+        team2Score.textContent = gameState.team2.score;
+
+        targetOverlay.style.display = "block";
+
+        roundResult.textContent    = resultText;
+        instructionText.textContent = "Target revealed!";
+        currentTurnEl.textContent   = "Round Complete";
+        messageArea.textContent     = resultText;
+
+        gameState.currentTurn = "post-reveal";
+        updateControlsVisibility();
+
+        // Check win conditions
+        const t1 = gameState.team1.score;
+        const t2 = gameState.team2.score;
+        const target = gameState.pointsToWin;
+        if (t1 >= target || t2 >= target) {
+          if (t1 > t2) {
+            endGame(`${gameState.team1.name} wins!`);
+          } else if (t2 > t1) {
+            endGame(`${gameState.team2.name} wins!`);
+          } else {
+            // Tie at or above target → sudden death
+            gameState.suddenDeath = true;
+            gameState.sdScores = { team1: 0, team2: 0 };
+            setTimeout(() => {
+              alert("Tie! Sudden Death begins.");
+              startNewRound();
+            }, 500);
+          }
+        }
+      } else {
+        // Sudden death round
+        if (pPts > 0) {
+          gameState.sdScores[psychicTeam] += pPts;
+          resultText = `${gameState[psychicTeam].name} scores ${pPts} points!`;
+        } else {
+          resultText = `${gameState[psychicTeam].name} scores 0 points.`;
+        }
+
+        if (pPts < 4) {
+          const isLeftGuess = guessed < actual;
+          const correctSide = isLeftGuess ? "left" : "right";
+          if (side === correctSide) {
+            gameState.sdScores[oppTeam] += 1;
+            resultText += ` ${gameState[oppTeam].name} guessed correctly and gains 1 point!`;
+          }
+        }
+
+        targetOverlay.style.display = "block";
+        roundResult.textContent    = resultText;
+        instructionText.textContent = "Sudden Death Target revealed!";
+        currentTurnEl.textContent   = "Round Complete";
+        messageArea.textContent     = resultText;
+
+        gameState.currentTurn = "post-reveal";
+        updateControlsVisibility();
+
+        const sd1 = gameState.sdScores.team1;
+        const sd2 = gameState.sdScores.team2;
+        if (sd1 > sd2) {
+          setTimeout(() => {
+            endGame(`${gameState.team1.name} wins sudden death!`);
+          }, 500);
+        } else if (sd2 > sd1) {
+          setTimeout(() => {
+            endGame(`${gameState.team2.name} wins sudden death!`);
+          }, 500);
+        } else {
+          setTimeout(() => {
+            alert("Still tied! Next sudden death round.");
             startNewRound();
+          }, 500);
         }
+      }
+    }
 
-        // Start a new round
-        function startNewRound() {
-            // Pick a random spectrum
-            const randomIndex = Math.floor(Math.random() * gameState.spectra.length);
-            gameState.currentSpectrum = gameState.spectra[randomIndex];
-            
-            // Set random target position
-            gameState.targetPosition = Math.floor(Math.random() * (100 - gameState.targetWidth - 1)) + 1;
-            
-            // Reset clue and guess
-            gameState.clue = "";
-            gameState.guess = 50;
-            
-            // Update spectrum display
-            leftConcept.textContent = gameState.currentSpectrum[0];
-            rightConcept.textContent = gameState.currentSpectrum[1];
-            
-            // Update clue display
-            clueDisplay.textContent = "Waiting for clue...";
-            
-            // Reset slider position
-            guessSlider.value = 50;
-            updateGuessMarker(50);
-            
-            // Hide target zone
-            targetZone.style.display = "none";
-            targetZone.style.width = `${gameState.targetWidth}%`;
-            
-            // Set current turn
-            // Alternate turns between teams
-            if (!gameState.currentTurn || gameState.currentTurn === "team2-guesser") {
-                gameState.currentTurn = "team1-psychic";
-                currentTurn.textContent = `${gameState.team1.name} Psychic`;
-                messageArea.textContent = `${gameState.team1.name} Psychic - Give a clue now!`;
-            } else {
-                gameState.currentTurn = "team2-psychic";
-                currentTurn.textContent = `${gameState.team2.name} Psychic`;
-                messageArea.textContent = `${gameState.team2.name} Psychic - Give a clue now!`;
-            }
-            
-            // Update controls visibility
-            updateControlsVisibility();
-        }
+    function nextRound() {
+      startNewRound();
+    }
 
-        // Give a clue
-        function giveClue() {
-            gameState.clue = clueInput.value.trim();
-            if (gameState.clue === "") {
-                messageArea.textContent = "Clue cannot be empty!";
-                messageArea.classList.remove('bg-yellow-50', 'border-yellow-200', 'text-yellow-700');
-                messageArea.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
-                return;
-            }
-            
-            clueDisplay.textContent = `"${gameState.clue}"`;
-            clueInput.value = "";
-            
-            // Move to guesser's turn
-            if (gameState.currentTurn === "team1-psychic") {
-                gameState.currentTurn = "team1-guesser";
-                currentTurn.textContent = `${gameState.team1.name} Guessing`;
-                messageArea.textContent = `${gameState.team1.name} - Move the slider to your guess position.`;
-                messageArea.classList.remove('bg-red-50', 'border-red-200', 'text-red-700');
-                messageArea.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-700');
-            } else {
-                gameState.currentTurn = "team2-guesser";
-                currentTurn.textContent = `${gameState.team2.name} Guessing`;
-                messageArea.textContent = `${gameState.team2.name} - Move the slider to your guess position.`;
-                messageArea.classList.remove('bg-red-50', 'border-red-200', 'text-red-700');
-                messageArea.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-700');
-            }
-            
-            updateControlsVisibility();
-        }
+    function updateControlsVisibility() {
+      document.getElementById("psychic-controls").classList.add("hidden");
+      document.getElementById("guesser-controls").classList.add("hidden");
+      document.getElementById("opponent-controls").classList.add("hidden");
+      document.getElementById("next-round-controls").classList.add("hidden");
 
-        // Lock in a guess
-        function lockGuess() {
-            gameState.guess = parseInt(guessSlider.value);
-            
-            // Move to reveal phase
-            gameState.currentTurn = gameState.currentTurn.replace('guesser', 'reveal');
-            currentTurn.textContent = currentTurn.textContent.replace('Guessing', 'Reveal Phase');
-            messageArea.textContent = "Click 'Reveal Target' to see the results";
-            
-            updateControlsVisibility();
-        }
+      switch (gameState.currentTurn) {
+        case "team1-psychic":
+        case "team2-psychic":
+          document.getElementById("psychic-controls").classList.remove("hidden");
+          break;
+        case "team1-guess":
+        case "team2-guess":
+          document.getElementById("guesser-controls").classList.remove("hidden");
+          break;
+        case "team1-opponent":
+        case "team2-opponent":
+          document.getElementById("opponent-controls").classList.remove("hidden");
+          break;
+        case "post-reveal":
+          document.getElementById("next-round-controls").classList.remove("hidden");
+          break;
+      }
+    }
 
-        // Reveal target
-        function revealTarget() {
-            // Show target zone
-            targetZone.style.display = "block";
-            targetZone.style.left = `${gameState.targetPosition - (gameState.targetWidth/2)}%`;
-            
-            // Calculate score
-            const guessDistance = Math.abs(gameState.guess - gameState.targetPosition);
-            let score;
-            
-            if (guessDistance <= 5) {
-                score = 4;
-            } else if (guessDistance <= 10) {
-                score = 3;
-            } else if (guessDistance <= 15) {
-                score = 2;
-            } else {
-                score = 1;
-            }
-            
-            // Determine which team is playing
-            const isTeam1Turn = gameState.currentTurn.includes('team1');
-            
-            // Update score
-            if (isTeam1Turn) {
-                gameState.team1.score += score;
-                gameState.roundResults = `${gameState.team1.name} scored ${score} points!`;
-                team1Score.textContent = gameState.team1.score;
-            } else {
-                gameState.team2.score += score;
-                gameState.roundResults = `${gameState.team2.name} scored ${score} points!`;
-                team2Score.textContent = gameState.team2.score;
-            }
-            
-            // Update UI
-            roundResult.textContent = gameState.roundResults;
-            
-            // Move to next round phase
-            gameState.currentTurn = "post-reveal";
-            messageArea.textContent = gameState.roundResults;
-            currentTurn.textContent = "Round Completed";
-            
-            // Update controls visibility
-            updateControlsVisibility();
-            
-            // Check for winner
-            if (gameState.team1.score >= gameState.pointsToWin || gameState.team2.score >= gameState.pointsToWin) {
-                let winner = gameState.team1.score >= gameState.pointsToWin ? 
-                    gameState.team1.name : gameState.team2.name;
-                messageArea.textContent = `${winner} wins the game!`;
-            }
-        }
+    function endGame(message) {
+      // Hide all controls
+      document.getElementById("psychic-controls").classList.add("hidden");
+      document.getElementById("guesser-controls").classList.add("hidden");
+      document.getElementById("opponent-controls").classList.add("hidden");
+      document.getElementById("next-round-controls").classList.add("hidden");
 
-        // Go to next round
-        function nextRound() {
-            startNewRound();
-        }
+      instructionText.textContent = message;
+      messageArea.textContent = "Game Over";
 
-        // Update UI controls based on current turn
-        function updateControlsVisibility() {
-            // Hide all controls first
-            psychicControls.classList.add('hidden');
-            guesserControls.classList.add('hidden');
-            revealControls.classList.add('hidden');
-            nextRoundControls.classList.add('hidden');
-            
-            // Show appropriate controls
-            if (gameState.currentTurn.includes('psychic')) {
-                psychicControls.classList.remove('hidden');
-            } else if (gameState.currentTurn.includes('guesser')) {
-                guesserControls.classList.remove('hidden');
-            } else if (gameState.currentTurn.includes('reveal')) {
-                revealControls.classList.remove('hidden');
-            } else if (gameState.currentTurn === "post-reveal") {
-                nextRoundControls.classList.remove('hidden');
-            }
-        }
+      // Optionally, you could auto-reset or show a "Restart" button here.
+    }
 
-        // Update guess marker position
-        function updateGuessMarker(position) {
-            guessMarker.style.left = `${position}%`;
-        }
+    // Event listeners
+    startBtn.addEventListener("click", initGame);
+    hideTargetBtn.addEventListener("click", hideTarget);
+    lockGuessBtn.addEventListener("click", lockGuess);
+    chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
+    chooseRightBtn.addEventListener("click", () => opponentChoice("right"));
+    nextRoundBtn.addEventListener("click", nextRound);
 
-        // Event Listeners
-        startBtn.addEventListener('click', initGame);
-        giveClueBtn.addEventListener('click', giveClue);
-        lockGuessBtn.addEventListener('click', lockGuess);
-        revealBtn.addEventListener('click', revealTarget);
-        nextRoundBtn.addEventListener('click', nextRound);
-        
-        // Update marker position when slider moves
-        guessSlider.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            updateGuessMarker(value);
-        });
+    document.getElementById("team1").addEventListener("input", (e) => {
+      team1NameEl.textContent = e.target.value.trim() || "Team 1";
+    });
+    document.getElementById("team2").addEventListener("input", (e) => {
+      team2NameEl.textContent = e.target.value.trim() || "Team 2";
+    });
 
-        // Update team names when typed in setup
-        document.getElementById('team1').addEventListener('input', (e) => {
-            team1NameEl.textContent = e.target.value || "Team 1";
-        });
-        
-        document.getElementById('team2').addEventListener('input', (e) => {
-            team2NameEl.textContent = e.target.value || "Team 2";
-        });
-    </script>
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("Wavelength loaded with responsive layout, tidy widths, and fixed end conditions");
+    });
+  </script>
 </body>
 </html>
