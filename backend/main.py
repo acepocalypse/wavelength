@@ -14,7 +14,7 @@ API_KEY = os.getenv("GENAI_API_KEY")
 if not API_KEY:
     raise RuntimeError("Please set GENAI_API_KEY in your environment or .env file")
 # genai.configure(api_key=API_KEY)
-client = genai.Client(api_key="GENAI_API_KEY")
+client = genai.Client(api_key=API_KEY)
 
 app = FastAPI()
 
