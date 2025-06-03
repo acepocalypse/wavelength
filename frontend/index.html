@@ -126,124 +126,132 @@
        3) GAME SCREEN
        ============================ -->
   <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6 bg-gray-100">
-    <!-- Header -->
-    <header class="w-full max-w-xl text-center mb-6">
-      <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
-    </header>
+  <!-- Header -->
+  <header class="w-full max-w-xl text-center mb-6">
+    <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
+  </header>
 
-    <!-- Semicircle + Needle (same styling as before) -->
-    <div class="w-full max-w-xs mb-4">
-      <div class="slider-container">
-        <div class="semi-circle">
-          <div id="target-overlay" class="target-overlay"></div>
-          <div id="guess-marker" class="guess-marker">
-            <div class="needle-stick"></div>
-            <div class="needle-base"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Labels & Instructions -->
-    <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
-      <div id="left-concept" class="text-red-500">Hot</div>
-      <div id="right-concept" class="text-blue-500">Cold</div>
-    </div>
-    <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md"></div>
-
-    <!-- Controls (hide/reveal, slider, lock, left/right, next round) -->
-    <div class="w-full max-w-md space-y-4">
-      <div id="psychic-controls" class="hidden">
-        <button
-          id="hide-target-btn"
-          class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
-        >
-          Hide Target & Pass to Guessers
-        </button>
-      </div>
-
-      <div id="guesser-controls" class="hidden flex flex-col items-center">
-        <div class="horizontal-slider-container w-full">
-          <input
-            type="range"
-            min="0"
-            max="180"
-            value="90"
-            id="active-horizontal-slider"
-            class="w-full"
-          />
-        </div>
-        <button
-          id="lock-guess-btn"
-          class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700"
-        >
-          Lock In Guess
-        </button>
-      </div>
-
-      <div id="opponent-controls" class="hidden flex space-x-2">
-        <button
-          id="choose-left-btn"
-          class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
-        >
-          Left of Target
-        </button>
-        <button
-          id="choose-right-btn"
-          class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
-        >
-          Right of Target
-        </button>
-      </div>
-
-      <div id="next-round-controls" class="hidden flex flex-col items-center">
-        <div
-          id="round-result"
-          class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full"
-        ></div>
-        <button
-          id="next-round-btn"
-          class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
-        >
-          Next Round
-        </button>
-      </div>
-    </div>
-
-    <!-- Scoreboard & Info -->
-    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
-          <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
-          <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
-        </div>
-        <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
-          <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
-          <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
-        </div>
-      </div>
-
-      <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
-        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
-          <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
-          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
-        </div>
-        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
-          <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
-          <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
-        </div>
-      </div>
-
-      <div>
-        <div
-          id="message-area"
-          class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base"
-        >
-          Game will begin when you press “Hide Target &amp; Pass to Guessers.”
+  <!-- Semicircle + Needle -->
+  <div class="w-full max-w-xs mb-4">
+    <div class="slider-container">
+      <div class="semi-circle">
+        <div id="target-overlay" class="target-overlay"></div>
+        <div id="guess-marker" class="guess-marker">
+          <div class="needle-stick"></div>
+          <div class="needle-base"></div>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Labels -->
+  <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
+    <div id="left-concept" class="text-red-500">Hot</div>
+    <div id="right-concept" class="text-blue-500">Cold</div>
+  </div>
+
+  <!-- Instructions -->
+  <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md">
+    <!-- “Team X Psychic: View the target.” etc. -->
+  </div>
+
+  <!-- Controls (Hide Target, Slider, Lock Guess, Left/Right, Next Round) -->
+  <div class="w-full max-w-md space-y-4">
+    <!-- Psychic’s “Hide Target & Pass” button -->
+    <div id="psychic-controls" class="hidden">
+      <button
+        id="hide-target-btn"
+        class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
+      >
+        Hide Target &amp; Pass to Guessers
+      </button>
+    </div>
+
+    <!-- Guesser’s slider + “Lock In Guess” -->
+    <div id="guesser-controls" class="hidden flex flex-col items-center">
+      <div class="horizontal-slider-container w-full">
+        <input
+          type="range"
+          min="0"
+          max="180"
+          value="90"
+          id="active-horizontal-slider"
+          class="w-full"
+        />
+      </div>
+      <button
+        id="lock-guess-btn"
+        class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700"
+      >
+        Lock In Guess
+      </button>
+    </div>
+
+    <!-- Opponent’s Left/Right buttons -->
+    <div id="opponent-controls" class="hidden flex space-x-2">
+      <button
+        id="choose-left-btn"
+        class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
+      >
+        Left of Target
+      </button>
+      <button
+        id="choose-right-btn"
+        class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
+      >
+        Right of Target
+      </button>
+    </div>
+
+    <!-- Next Round display + button -->
+    <div id="next-round-controls" class="hidden flex flex-col items-center">
+      <div
+        id="round-result"
+        class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full"
+      ></div>
+      <button
+        id="next-round-btn"
+        class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
+      >
+        Next Round
+      </button>
+    </div>
+  </div>
+
+  <!-- Scoreboard & Info -->
+  <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
+        <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
+        <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
+      </div>
+      <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
+        <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
+        <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
+      <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
+        <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
+        <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
+      </div>
+      <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
+        <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
+        <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
+      </div>
+    </div>
+
+    <div>
+      <div
+        id="message-area"
+        class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base"
+      >
+        Game will begin when you press “Hide Target & Pass to Guessers.”
+      </div>
+    </div>
+  </div>
+</div>
 
   <script>
     // —————————————————————————
