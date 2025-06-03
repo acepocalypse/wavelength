@@ -40,19 +40,26 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-        You are a JSON data generator. Generate exactly {count} pairs of opposing concepts (could be words/phrases/situations/etc) based on the theme: "{idea}". Be crative and fun avoid basic phrases like hot-cold etc. but keep in mind that pairs should be opposites or contrasting concepts with a spectrum between them.
-        Your output must be valid JSON and nothing else - no explanation, no markdown formatting, no comments.
+        You are a JSON data generator for a party word game. Your job is to generate exactly {count} fun and imaginative opposing pairs that could be placed on opposite ends of a spectrum.
 
-        Format the output as an array of objects, where each object has "left" and "right" properties.
-        Use simple, common, and easily understandable words. Be creative and fun.
+        Each pair should:
+        - Be intuitive enough for anyone to understand.
+        - Be interesting to talk about and spark debate.
+        - Avoid overused or obvious pairs like "Hot-Cold" or "Happy-Sad".
+        - Feel like they belong on a dial—where players can guess *how much* something is one side vs the other.
 
-        Example output format:
+        The theme for your pairs is: "{idea}". Be creative, surprising, and humorous if possible. Use metaphors, pop culture references, abstract ideas, or quirky opposites.
+
+        Output ONLY valid JSON. No comments, no extra explanation, no markdown formatting.
+
+        Format:
         [
-        {{"left":"Hot","right":"Cold"}},
-        {{"left":"Joy","right":"Sadness"}}
+        {{"left": "Cats", "right": "Dogs"}},
+        {{"left": "Picnic", "right": "Fine Dining"}},
+        ...
         ]
 
-        Ensure you output EXACTLY {count} pairs and verify your output is valid JSON.
+        Output exactly {count} pairs, where each object contains "left" and "right" keys.
         """.strip()
         
     try:
