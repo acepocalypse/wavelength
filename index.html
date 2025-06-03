@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wavelength (Responsive &amp; Tidy with Fixed End Conditions)</title>
+  <title>Wavelength (Responsive &amp; Tidy with AI-Generated Spectrums)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -30,6 +30,28 @@
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+    }
+
+    /* PROMPT SCREEN */
+    #prompt-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 100vh;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 1rem;
+    }
+    .prompt-card {
+      background: #FFFFFF;
+      border: 2px solid var(--navy-border);
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      padding: 1.5rem;
+      text-align: center;
     }
 
     /* Setup card */
@@ -155,8 +177,29 @@
   </style>
 </head>
 <body>
+  <!-- PROMPT SCREEN: ask for concept to generate 30 spectrums -->
+  <div id="prompt-screen">
+    <div class="prompt-card">
+      <h2 class="text-xl font-bold text-gray-900 mb-2">Enter a Concept or Idea</h2>
+      <p class="text-gray-700 mb-4">We’ll generate 30 random spectrum endpoints based on this.</p>
+      <input
+        type="text"
+        id="idea-input"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 mb-4 text-sm"
+        placeholder="e.g. emotion, temperature, taste..."
+      />
+      <button
+        id="generate-btn"
+        class="btn-primary w-full py-2 rounded-lg text-base font-semibold"
+      >
+        Generate Spectrums
+      </button>
+      <p id="prompt-status" class="mt-2 text-sm text-gray-500 invisible"></p>
+    </div>
+  </div>
+
   <!-- SETUP SCREEN -->
-  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen px-4">
+  <div id="setup-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen px-4">
     <div class="setup-card w-full max-w-md p-6 space-y-6">
       <div class="text-center">
         <h1 class="text-3xl font-bold text-gray-900">Wavelength</h1>
@@ -332,50 +375,99 @@
   </div>
 
   <script>
+    // Extended gameState to hold AI-generated 30 spectrums
     const gameState = {
       team1: { name: "Team 1", score: 0 },
       team2: { name: "Team 2", score: 0 },
       pointsToWin: 10,
       currentTurn: "team1-psychic",
-      currentSpectrum: ["Hot", "Cold"],
+      currentSpectrum: [],      // will store the 30 AI-generated pairs
+      spectrumIndex: 0,
       targetPosition: 0,
       guess: 90,
-      spectra: [
-        ["Hot","Cold"],["Good","Evil"],["Simple","Complex"],
-        ["Cheap","Expensive"],["Safe","Dangerous"],["Soft","Hard"],
-        ["Rare","Common"],["Quiet","Loud"],["Weak","Strong"],
-        ["Tradition","Innovation"],["Freedom","Security"],["Bad","Good"]
-      ],
       isPlaying: false,
       suddenDeath: false,
       sdScores: { team1: 0, team2: 0 }
     };
 
     // DOM refs
-    const setupScreen      = document.getElementById("setup-screen");
-    const gameScreen       = document.getElementById("game-screen");
-    const startBtn         = document.getElementById("start-btn");
-    const hideTargetBtn    = document.getElementById("hide-target-btn");
-    const activeSlider     = document.getElementById("active-horizontal-slider");
-    const lockGuessBtn     = document.getElementById("lock-guess-btn");
-    const chooseLeftBtn    = document.getElementById("choose-left-btn");
-    const chooseRightBtn   = document.getElementById("choose-right-btn");
-    const nextRoundBtn     = document.getElementById("next-round-btn");
-    const targetOverlay    = document.getElementById("target-overlay");
-    const leftConcept      = document.getElementById("left-concept");
-    const rightConcept     = document.getElementById("right-concept");
-    const instructionText  = document.getElementById("instruction-text");
-    const messageArea      = document.getElementById("message-area");
-    const team1Score       = document.getElementById("team1-score-display");
-    const team2Score       = document.getElementById("team2-score-display");
-    const team1NameEl      = document.getElementById("team1-name");
-    const team2NameEl      = document.getElementById("team2-name");
-    const targetScoreEl    = document.getElementById("target-score");
-    const currentTurnEl    = document.getElementById("current-turn");
-    const roundResult      = document.getElementById("round-result");
-    const guessMarker      = document.getElementById("guess-marker");
+    const promptScreen      = document.getElementById("prompt-screen");
+    const ideaInput         = document.getElementById("idea-input");
+    const generateBtn       = document.getElementById("generate-btn");
+    const promptStatus      = document.getElementById("prompt-status");
 
-    function initGame() {
+    const setupScreen       = document.getElementById("setup-screen");
+    const gameScreen        = document.getElementById("game-screen");
+    const startBtn          = document.getElementById("start-btn");
+    const hideTargetBtn     = document.getElementById("hide-target-btn");
+    const activeSlider      = document.getElementById("active-horizontal-slider");
+    const lockGuessBtn      = document.getElementById("lock-guess-btn");
+    const chooseLeftBtn     = document.getElementById("choose-left-btn");
+    const chooseRightBtn    = document.getElementById("choose-right-btn");
+    const nextRoundBtn      = document.getElementById("next-round-btn");
+    const targetOverlay     = document.getElementById("target-overlay");
+    const leftConcept       = document.getElementById("left-concept");
+    const rightConcept      = document.getElementById("right-concept");
+    const instructionText   = document.getElementById("instruction-text");
+    const messageArea       = document.getElementById("message-area");
+    const team1Score        = document.getElementById("team1-score-display");
+    const team2Score        = document.getElementById("team2-score-display");
+    const team1NameEl       = document.getElementById("team1-name");
+    const team2NameEl       = document.getElementById("team2-name");
+    const targetScoreEl     = document.getElementById("target-score");
+    const currentTurnEl     = document.getElementById("current-turn");
+    const roundResult       = document.getElementById("round-result");
+    const guessMarker       = document.getElementById("guess-marker");
+
+    // 1) Handle Generate Spectrums click
+    generateBtn.addEventListener("click", async () => {
+      const idea = ideaInput.value.trim();
+      if (!idea) {
+        promptStatus.textContent = "Please enter a concept.";
+        promptStatus.classList.remove("invisible", "text-gray-500", "text-green-600");
+        promptStatus.classList.add("text-red-500");
+        return;
+      }
+      promptStatus.textContent = "Generating spectrums…";
+      promptStatus.classList.remove("invisible", "text-red-500", "text-green-600");
+      promptStatus.classList.add("text-gray-500");
+      generateBtn.disabled = true;
+
+      try {
+        // Call our Python backend (replace URL if deployed elsewhere)
+        const resp = await fetch("/api/generateSpectrums", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea, count: 30 })
+        });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
+          throw new Error("Invalid or insufficient spectrums returned");
+        }
+
+        // Store the 30 generated pairs
+        gameState.currentSpectrum = data.spectrums;
+        promptStatus.textContent = "Spectrums generated!";
+        promptStatus.classList.remove("text-gray-500", "text-red-500");
+        promptStatus.classList.add("text-green-600");
+
+        // Transition to setup after a brief delay
+        setTimeout(() => {
+          promptScreen.classList.add("hidden");
+          setupScreen.classList.remove("hidden");
+        }, 500);
+      } catch (err) {
+        console.error(err);
+        promptStatus.textContent = "Generation failed. Try again.";
+        promptStatus.classList.remove("text-gray-500", "text-green-600");
+        promptStatus.classList.add("text-red-500");
+        generateBtn.disabled = false;
+      }
+    });
+
+    // 2) Initialize game once "Start Game" is clicked
+    startBtn.addEventListener("click", () => {
       gameState.team1.name  = document.getElementById("team1").value.trim() || "Team 1";
       gameState.team2.name  = document.getElementById("team2").value.trim() || "Team 2";
       gameState.pointsToWin = parseInt(document.getElementById("points").value, 10) || 10;
@@ -384,6 +476,7 @@
       gameState.team2.score = 0;
       gameState.suddenDeath = false;
       gameState.sdScores = { team1: 0, team2: 0 };
+      gameState.spectrumIndex = 0; // start from first AI-generated pair
 
       team1NameEl.textContent = gameState.team1.name;
       team2NameEl.textContent = gameState.team2.name;
@@ -396,20 +489,23 @@
       gameState.isPlaying = true;
 
       startNewRound();
-    }
+    });
 
     function startNewRound() {
       roundResult.textContent = "";
 
-      const idx = Math.floor(Math.random() * gameState.spectra.length);
-      gameState.currentSpectrum = gameState.spectra[idx];
+      // Use next AI-generated pair:
+      const [leftWord, rightWord] = gameState.currentSpectrum[gameState.spectrumIndex % 30];
+      gameState.spectrumIndex++;
 
+      leftConcept.textContent  = leftWord;
+      rightConcept.textContent = rightWord;
+
+      // Random target center (float) between 4° and 176°
       gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
       gameState.guess = 90;
 
-      leftConcept.textContent  = gameState.currentSpectrum[0];
-      rightConcept.textContent = gameState.currentSpectrum[1];
-
+      // Build 40° conic gradient
       const center    = gameState.targetPosition;
       const bandStart = center - 20;
       const fromAngle = bandStart + 270;
@@ -430,6 +526,7 @@
       updateNeedle(90);
       activeSlider.style.display = "none";
 
+      // Alternate Psychic
       if (
         gameState.currentTurn === "team2-opponent" ||
         gameState.currentTurn === "team2-guess"   ||
@@ -442,21 +539,8 @@
         currentTurnEl.textContent = `${gameState.team2.name} Psychic`;
       }
 
-      if (!gameState.suddenDeath) {
-        instructionText.textContent = `${
-          gameState.currentTurn.includes("team1")
-            ? gameState.team1.name
-            : gameState.team2.name
-        } Psychic: View the target.`;
-        messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
-      } else {
-        instructionText.textContent = `${
-          gameState.currentTurn.includes("team1")
-            ? gameState.team1.name
-            : gameState.team2.name
-        } Psychic (Sudden Death): View the target.`;
-        messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
-      }
+      instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
+      messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
 
       updateControlsVisibility();
     }
@@ -489,8 +573,7 @@
     }
 
     activeSlider.addEventListener("input", (e) => {
-      const v = parseInt(e.target.value, 10);
-      updateNeedle(v);
+      updateNeedle(parseInt(e.target.value, 10));
     });
 
     function lockGuess() {
@@ -549,7 +632,6 @@
         team2Score.textContent = gameState.team2.score;
 
         targetOverlay.style.display = "block";
-
         roundResult.textContent    = resultText;
         instructionText.textContent = "Target revealed!";
         currentTurnEl.textContent   = "Round Complete";
@@ -568,11 +650,10 @@
           } else if (t2 > t1) {
             endGame(`${gameState.team2.name} wins!`);
           } else {
-            // Tie at or above target → sudden death
             gameState.suddenDeath = true;
             gameState.sdScores = { team1: 0, team2: 0 };
             setTimeout(() => {
-              alert("Tie! Sudden Death begins.");
+              alert("Tie at target! Sudden Death begins.");
               startNewRound();
             }, 500);
           }
@@ -662,16 +743,19 @@
       instructionText.textContent = message;
       messageArea.textContent = "Game Over";
 
-      // Optionally, you could auto-reset or show a "Restart" button here.
+      if (!document.getElementById("restart-btn")) {
+        const btn = document.createElement("button");
+        btn.id = "restart-btn";
+        btn.className = "btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md mt-4";
+        btn.textContent = "New Game";
+        btn.onclick = () => {
+          document.getElementById("restart-btn").remove();
+          gameScreen.classList.add("hidden");
+          setupScreen.classList.remove("hidden");
+        };
+        messageArea.parentNode.appendChild(btn);
+      }
     }
-
-    // Event listeners
-    startBtn.addEventListener("click", initGame);
-    hideTargetBtn.addEventListener("click", hideTarget);
-    lockGuessBtn.addEventListener("click", lockGuess);
-    chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
-    chooseRightBtn.addEventListener("click", () => opponentChoice("right"));
-    nextRoundBtn.addEventListener("click", nextRound);
 
     document.getElementById("team1").addEventListener("input", (e) => {
       team1NameEl.textContent = e.target.value.trim() || "Team 1";
@@ -680,8 +764,16 @@
       team2NameEl.textContent = e.target.value.trim() || "Team 2";
     });
 
+    // Setup event listeners for game flow
+    startBtn.addEventListener("click", initGame);
+    hideTargetBtn.addEventListener("click", hideTarget);
+    lockGuessBtn.addEventListener("click", lockGuess);
+    chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
+    chooseRightBtn.addEventListener("click", () => opponentChoice("right"));
+    nextRoundBtn.addEventListener("click", nextRound);
+
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("Wavelength loaded with responsive layout, tidy widths, and fixed end conditions");
+      console.log("Wavelength loaded with AI-generated spectrums");
     });
   </script>
 </body>
