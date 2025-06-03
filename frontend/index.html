@@ -396,6 +396,11 @@
       updatePromptUI();
     });
 
+    // Reinsert slider input listener
+    activeSlider.addEventListener("input", (e) => {
+      updateNeedle(parseInt(e.target.value, 10));
+    });
+
     function startNewRound() {
       roundResult.textContent = "";
 
