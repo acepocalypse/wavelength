@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Wavelength (Responsive &amp; Tidy with AI-Generated Spectrums)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Wavelength (AI-Generated Spectrums)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
@@ -14,63 +14,52 @@
       --blue: #60A5FA;
       --needle-color: #5FC7B7;
       --pivot-color: #E63946;
-      --border-thickness: 8px; /* mobile */
-      --radius: 100px;         /* mobile */
-      --full-width: calc(var(--radius) * 2);
+      --border-thickness: 8px;
+      --radius: 100px;
+      --full-width: calc(var(--radius)*2);
       --half-height: var(--radius);
-      --container-height: calc(var(--half-height) + var(--border-thickness));
+      --container-height: calc(var(--half-height)+var(--border-thickness));
     }
 
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: #ECECEC;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column; align-items: center;
       min-height: 100vh;
     }
 
     /* PROMPT SCREEN */
     #prompt-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      min-height: 100vh;
-      background: rgba(0, 0, 0, 0.05);
-      padding: 1rem;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; min-height: 100vh;
+      background: rgba(0,0,0,0.05); padding: 1rem;
     }
     .prompt-card {
-      background: #FFFFFF;
+      background: #FFF;
       border: 2px solid var(--navy-border);
       border-radius: 1rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-      padding: 1.5rem;
-      text-align: center;
+      width: 100%; max-width: 400px;
+      padding: 1.5rem; text-align: center;
     }
 
-    /* Setup card */
+    /* SETUP CARD */
     .setup-card {
-      background: #FFFFFF;
+      background: #FFF;
       border: 2px solid var(--navy-border);
       border-radius: 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    /* Semicircle */
+    /* SEMI-CIRCLE */
     .slider-container {
       position: relative;
-      width: 100%;
-      max-width: var(--full-width);
+      width: 100%; max-width: var(--full-width);
       height: var(--container-height);
       margin: 0 auto 1rem;
     }
-
     .semi-circle {
       position: relative;
       width: 100%;
@@ -80,35 +69,23 @@
       border-bottom: none;
       border-top-left-radius: var(--radius);
       border-top-right-radius: var(--radius);
-      overflow: hidden;
-      box-sizing: border-box;
+      overflow: hidden; box-sizing: border-box;
     }
-
     .target-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 2;
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 2;
       background: transparent;
     }
-
     .guess-marker {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
+      position: absolute; bottom: 0; left: 50%;
       width: 4px;
       height: calc(var(--half-height) + var(--border-thickness));
       transform-origin: bottom center;
       z-index: 3;
     }
-
     .needle-stick {
-      position: absolute;
-      bottom: 0;
-      left: 50%;
+      position: absolute; bottom: 0; left: 50%;
       width: 4px;
       height: calc(var(--half-height) * 0.9);
       background-color: var(--needle-color);
@@ -117,13 +94,9 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.15);
       z-index: 4;
     }
-
     .needle-base {
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      width: 24px;
-      height: 24px;
+      position: absolute; bottom: -8px; left: 50%;
+      width: 24px; height: 24px;
       background-color: var(--pivot-color);
       border-radius: 50%;
       transform: translateX(-50%);
@@ -131,57 +104,54 @@
       z-index: 5;
     }
 
-    /* Buttons */
+    /* BUTTONS */
     .btn-primary {
-      background-color: var(--navy-border);
-      color: #FFFFFF;
+      background-color: var(--navy-border); color: #FFF;
     }
     .btn-primary:hover {
       background-color: #16202E;
     }
     .btn-secondary {
-      background-color: #8B5CF6; /* purple */
-      color: #FFFFFF;
+      background-color: #8B5CF6; color: #FFF;
     }
     .btn-secondary:hover {
       background-color: #7A4EE6;
     }
     .btn-contrast {
-      background-color: var(--green-600, #22C55E);
-      color: #FFFFFF;
+      background-color: #22C55E; color: #FFF;
     }
     .btn-contrast:hover {
       background-color: #16A34A;
     }
 
-    /* Mobile adjustments */
     @media (min-width: 640px) {
       :root {
-        --border-thickness: 12px;
-        --radius: 120px;
-        --full-width: calc(var(--radius) * 2);
+        --border-thickness: 12px; --radius: 120px;
+        --full-width: calc(var(--radius)*2);
         --half-height: var(--radius);
-        --container-height: calc(var(--half-height) + var(--border-thickness));
+        --container-height: calc(var(--half-height)+var(--border-thickness));
       }
     }
-
     @media (min-width: 1024px) {
       :root {
-        --border-thickness: 16px;
-        --radius: 150px;
-        --full-width: calc(var(--radius) * 2);
+        --border-thickness: 16px; --radius: 150px;
+        --full-width: calc(var(--radius)*2);
         --half-height: var(--radius);
-        --container-height: calc(var(--half-height) + var(--border-thickness));
+        --container-height: calc(var(--half-height)+var(--border-thickness));
       }
     }
   </style>
 </head>
 <body>
-  <!-- PROMPT SCREEN: ask for concept to generate 30 spectrums -->
+  <!-- PROMPT SCREEN -->
   <div id="prompt-screen">
     <div class="prompt-card">
-      <h2 class="text-xl font-bold text-gray-900 mb-2">Enter a Concept or Idea</h2>
-      <p class="text-gray-700 mb-4">We’ll generate 30 random spectrum endpoints based on this.</p>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">
+        Enter a Concept or Idea
+      </h2>
+      <p class="text-gray-700 mb-4">
+        We’ll generate 30 random spectrum endpoints based on this.
+      </p>
       <input
         type="text"
         id="idea-input"
@@ -208,7 +178,9 @@
 
       <div class="space-y-4">
         <div>
-          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">Team 1 Name</label>
+          <label for="team1" class="block text-sm font-medium text-gray-700 mb-1">
+            Team 1 Name
+          </label>
           <input
             type="text"
             id="team1"
@@ -219,7 +191,9 @@
         </div>
 
         <div>
-          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">Team 2 Name</label>
+          <label for="team2" class="block text-sm font-medium text-gray-700 mb-1">
+            Team 2 Name
+          </label>
           <input
             type="text"
             id="team2"
@@ -230,7 +204,9 @@
         </div>
 
         <div>
-          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Points to Win</label>
+          <label for="points" class="block text-sm font-medium text-gray-700 mb-1">
+            Points to Win
+          </label>
           <input
             type="number"
             id="points"
@@ -241,7 +217,10 @@
         </div>
       </div>
 
-      <button id="start-btn" class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md">
+      <button
+        id="start-btn"
+        class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md"
+      >
         Start Game
       </button>
     </div>
@@ -328,8 +307,8 @@
       <div id="next-round-controls" class="hidden flex flex-col items-center">
         <div
           id="round-result"
-          class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full"
-        ></div>
+          class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full
+        "></div>
         <button
           id="next-round-btn"
           class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md"
@@ -355,7 +334,9 @@
       <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
         <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
           <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
-          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
+          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">
+            Team 1 Psychic
+          </p>
         </div>
         <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
           <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
@@ -375,13 +356,13 @@
   </div>
 
   <script>
-    // Extended gameState to hold AI-generated 30 spectrums
+    // 1) Store AI-generated spectrums
     const gameState = {
       team1: { name: "Team 1", score: 0 },
       team2: { name: "Team 2", score: 0 },
       pointsToWin: 10,
       currentTurn: "team1-psychic",
-      currentSpectrum: [],      // will store the 30 AI-generated pairs
+      currentSpectrum: [],
       spectrumIndex: 0,
       targetPosition: 0,
       guess: 90,
@@ -390,49 +371,59 @@
       sdScores: { team1: 0, team2: 0 }
     };
 
-    // DOM refs
-    const promptScreen      = document.getElementById("prompt-screen");
-    const ideaInput         = document.getElementById("idea-input");
-    const generateBtn       = document.getElementById("generate-btn");
-    const promptStatus      = document.getElementById("prompt-status");
+    // 2) DOM refs
+    const promptScreen   = document.getElementById("prompt-screen");
+    const ideaInput      = document.getElementById("idea-input");
+    const generateBtn    = document.getElementById("generate-btn");
+    const promptStatus   = document.getElementById("prompt-status");
 
-    const setupScreen       = document.getElementById("setup-screen");
-    const gameScreen        = document.getElementById("game-screen");
-    const startBtn          = document.getElementById("start-btn");
-    const hideTargetBtn     = document.getElementById("hide-target-btn");
-    const activeSlider      = document.getElementById("active-horizontal-slider");
-    const lockGuessBtn      = document.getElementById("lock-guess-btn");
-    const chooseLeftBtn     = document.getElementById("choose-left-btn");
-    const chooseRightBtn    = document.getElementById("choose-right-btn");
-    const nextRoundBtn      = document.getElementById("next-round-btn");
-    const targetOverlay     = document.getElementById("target-overlay");
-    const leftConcept       = document.getElementById("left-concept");
-    const rightConcept      = document.getElementById("right-concept");
-    const instructionText   = document.getElementById("instruction-text");
-    const messageArea       = document.getElementById("message-area");
-    const team1Score        = document.getElementById("team1-score-display");
-    const team2Score        = document.getElementById("team2-score-display");
-    const team1NameEl       = document.getElementById("team1-name");
-    const team2NameEl       = document.getElementById("team2-name");
-    const targetScoreEl     = document.getElementById("target-score");
-    const currentTurnEl     = document.getElementById("current-turn");
-    const roundResult       = document.getElementById("round-result");
-    const guessMarker       = document.getElementById("guess-marker");
-    
-    // Backend connection settings
-    const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app/";
+    const setupScreen    = document.getElementById("setup-screen");
+    const gameScreen     = document.getElementById("game-screen");
+    const startBtn       = document.getElementById("start-btn");
+    const hideTargetBtn  = document.getElementById("hide-target-btn");
+    const activeSlider   = document.getElementById("active-horizontal-slider");
+    const lockGuessBtn   = document.getElementById("lock-guess-btn");
+    const chooseLeftBtn  = document.getElementById("choose-left-btn");
+    const chooseRightBtn = document.getElementById("choose-right-btn");
+    const nextRoundBtn   = document.getElementById("next-round-btn");
+    const targetOverlay  = document.getElementById("target-overlay");
+    const leftConcept    = document.getElementById("left-concept");
+    const rightConcept   = document.getElementById("right-concept");
+    const instructionText= document.getElementById("instruction-text");
+    const messageArea    = document.getElementById("message-area");
+    const team1Score     = document.getElementById("team1-score-display");
+    const team2Score     = document.getElementById("team2-score-display");
+    const team1NameEl    = document.getElementById("team1-name");
+    const team2NameEl    = document.getElementById("team2-name");
+    const targetScoreEl  = document.getElementById("target-score");
+    const currentTurnEl  = document.getElementById("current-turn");
+    const roundResult    = document.getElementById("round-result");
+    const guessMarker    = document.getElementById("guess-marker");
 
+    // 3) Backend URL (no trailing slash!)
+    const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app";
+
+    // 4) Function to call the backend
     async function fetchSpectrums(idea, count = 30) {
-      const resp = await fetch(`${BACKEND_URL}/api/generateSpectrums`, {
+      const url = `${BACKEND_URL}/api/generateSpectrums`;
+      console.log("→ Fetching from:", url, "body:", { idea, count });
+      const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idea, count })
       });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return resp.json(); // { spectrums: [ ["Hot","Cold"], ... ] }
+      console.log("← Response status:", resp.status);
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error("   Got error text:", text);
+        throw new Error(`HTTP ${resp.status}`);
+      }
+      const payload = await resp.json();
+      console.log("← Parsed payload:", payload);
+      return payload;
     }
 
-    // 1) Handle Generate Spectrums click
+    // 5) Handle “Generate Spectrums” button click
     generateBtn.addEventListener("click", async () => {
       const idea = ideaInput.value.trim();
       if (!idea) {
@@ -441,6 +432,7 @@
         promptStatus.classList.add("text-red-500");
         return;
       }
+
       promptStatus.textContent = "Generating spectrums…";
       promptStatus.classList.remove("invisible", "text-red-500", "text-green-600");
       promptStatus.classList.add("text-gray-500");
@@ -448,24 +440,21 @@
 
       try {
         const data = await fetchSpectrums(idea, 30);
-        
         if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
           throw new Error("Invalid or insufficient spectrums returned");
         }
 
-        // Store the 30 generated pairs
         gameState.currentSpectrum = data.spectrums;
         promptStatus.textContent = "Spectrums generated!";
         promptStatus.classList.remove("text-gray-500", "text-red-500");
         promptStatus.classList.add("text-green-600");
 
-        // Transition to setup after a brief delay
         setTimeout(() => {
           promptScreen.classList.add("hidden");
           setupScreen.classList.remove("hidden");
         }, 500);
       } catch (err) {
-        console.error(err);
+        console.error("❌ Generation error:", err);
         promptStatus.textContent = "Generation failed. Try again.";
         promptStatus.classList.remove("text-gray-500", "text-green-600");
         promptStatus.classList.add("text-red-500");
@@ -473,8 +462,8 @@
       }
     });
 
-    // 2) Initialize game once "Start Game" is clicked
-    startBtn.addEventListener("click", () => {
+    // 6) All game logic functions must appear here, before the event listeners:
+    function initGame() {
       gameState.team1.name  = document.getElementById("team1").value.trim() || "Team 1";
       gameState.team2.name  = document.getElementById("team2").value.trim() || "Team 2";
       gameState.pointsToWin = parseInt(document.getElementById("points").value, 10) || 10;
@@ -483,7 +472,7 @@
       gameState.team2.score = 0;
       gameState.suddenDeath = false;
       gameState.sdScores = { team1: 0, team2: 0 };
-      gameState.spectrumIndex = 0; // start from first AI-generated pair
+      gameState.spectrumIndex = 0;
 
       team1NameEl.textContent = gameState.team1.name;
       team2NameEl.textContent = gameState.team2.name;
@@ -496,19 +485,19 @@
       gameState.isPlaying = true;
 
       startNewRound();
-    });
+    }
 
     function startNewRound() {
       roundResult.textContent = "";
 
-      // Use next AI-generated pair:
+      // Pick next pair from the 30 AI-generated
       const [leftWord, rightWord] = gameState.currentSpectrum[gameState.spectrumIndex % 30];
       gameState.spectrumIndex++;
 
       leftConcept.textContent  = leftWord;
       rightConcept.textContent = rightWord;
 
-      // Random target center (float) between 4° and 176°
+      // Random target center [4°, 176°]
       gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
       gameState.guess = 90;
 
@@ -578,10 +567,6 @@
       const adjusted = deg - 90;
       guessMarker.style.transform = `translateX(-50%) rotate(${adjusted}deg)`;
     }
-
-    activeSlider.addEventListener("input", (e) => {
-      updateNeedle(parseInt(e.target.value, 10));
-    });
 
     function lockGuess() {
       if (gameState.currentTurn === "team1-guess") {
@@ -741,7 +726,6 @@
     }
 
     function endGame(message) {
-      // Hide all controls
       document.getElementById("psychic-controls").classList.add("hidden");
       document.getElementById("guesser-controls").classList.add("hidden");
       document.getElementById("opponent-controls").classList.add("hidden");
@@ -764,6 +748,7 @@
       }
     }
 
+    // Live update team names
     document.getElementById("team1").addEventListener("input", (e) => {
       team1NameEl.textContent = e.target.value.trim() || "Team 1";
     });
@@ -771,7 +756,7 @@
       team2NameEl.textContent = e.target.value.trim() || "Team 2";
     });
 
-    // Setup event listeners for game flow
+    // Attach event listeners for game flow
     startBtn.addEventListener("click", initGame);
     hideTargetBtn.addEventListener("click", hideTarget);
     lockGuessBtn.addEventListener("click", lockGuess);
