@@ -418,6 +418,19 @@
     const currentTurnEl     = document.getElementById("current-turn");
     const roundResult       = document.getElementById("round-result");
     const guessMarker       = document.getElementById("guess-marker");
+    
+    // Backend connection settings
+    const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app/";
+
+    async function fetchSpectrums(idea, count = 30) {
+      const resp = await fetch(`${BACKEND_URL}/api/generateSpectrums`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea, count })
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return resp.json(); // { spectrums: [ ["Hot","Cold"], ... ] }
+    }
 
     // 1) Handle Generate Spectrums click
     generateBtn.addEventListener("click", async () => {
@@ -434,14 +447,8 @@
       generateBtn.disabled = true;
 
       try {
-        // Call our Python backend (replace URL if deployed elsewhere)
-        const resp = await fetch("/api/generateSpectrums", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ idea, count: 30 })
-        });
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-        const data = await resp.json();
+        const data = await fetchSpectrums(idea, 30);
+        
         if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
           throw new Error("Invalid or insufficient spectrums returned");
         }
