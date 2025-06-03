@@ -3,260 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Wavelength (3‐Screen, Single Page)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Wavelength (AI or Default Spectrums)</title>
   <style>
-    /* Utility to hide an element */
+    :root {
+      --cream-bg: #F3EEE9;
+      --navy-border: #1E293B;
+      --needle-color: #5FC7B7;
+      --pivot-color: #E63946;
+      --border-thickness: 8px;
+      --radius: 100px;
+      --full-width: calc(var(--radius) * 2);
+      --half-height: var(--radius);
+      --container-height: calc(var(--half-height) + var(--border-thickness));
+    }
+    .slider-container {
+      position: relative;
+      width: 100%;
+      max-width: var(--full-width);
+      height: var(--container-height);
+      margin: 0 auto 1rem;
+    }
+    .semi-circle {
+      position: relative;
+      width: 100%;
+      height: var(--container-height);
+      background-color: var(--cream-bg);
+      border: var(--border-thickness) solid var(--navy-border);
+      border-bottom: none;
+      border-top-left-radius: var(--radius);
+      border-top-right-radius: var(--radius);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .target-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      background: transparent;
+    }
+    .guess-marker {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      height: calc(var(--half-height) + var(--border-thickness));
+      transform-origin: bottom center;
+      z-index: 3;
+    }
+    .needle-stick {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      height: calc(var(--half-height) * 0.9);
+      background-color: var(--needle-color);
+      border-radius: 2px 2px 0 0;
+      transform: translateX(-50%);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      z-index: 4;
+    }
+    .needle-base {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      width: 24px;
+      height: 24px;
+      background-color: var(--pivot-color);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      z-index: 5;
+    }
     .hidden { display: none; }
-
-    /* (Other CSS omitted for brevity—use the same semicircle/slider styling you already have.) */
   </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <!-- =========================================
-       1) SETUP SCREEN (initial landing page)
-       ========================================= -->
-  <div id="setup-screen" class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+<body class="bg-gray-100 min-h-screen flex flex-col items-center">
+
+  <!-- Setup Screen -->
+  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h1 class="text-3xl font-bold mb-4">Wavelength Setup</h1>
-
       <div class="space-y-4 mb-6 text-left">
         <div>
           <label for="team1" class="block text-sm font-medium text-gray-700">Team 1 Name</label>
-          <input
-            type="text"
-            id="team1"
-            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            value="Team 1"
-          />
+          <input id="team1" type="text" value="Team 1"
+                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
         </div>
         <div>
           <label for="team2" class="block text-sm font-medium text-gray-700">Team 2 Name</label>
-          <input
-            type="text"
-            id="team2"
-            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            value="Team 2"
-          />
+          <input id="team2" type="text" value="Team 2"
+                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
         </div>
         <div>
-          <label for="points" class="block text-sm font-medium text-gray-700">Points To Win</label>
-          <input
-            type="number"
-            id="points"
-            min="1"
-            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-            value="10"
-          />
+          <label for="points" class="block text-sm font-medium text-gray-700">Points to Win</label>
+          <input id="points" type="number" value="10" min="1"
+                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
         </div>
       </div>
-
-      <button
-        id="start-btn"
-        class="btn-primary w-full py-3 rounded-lg text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
-      >
+      <button id="start-btn"
+              class="w-full py-3 rounded-lg text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700">
         Start Game
       </button>
     </div>
   </div>
 
-  <!-- ====================================================
-       2) SPECTRUM SOURCE SCREEN (choose Default vs. AI)
-       ==================================================== -->
-  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center min-h-screen bg-gray-50">
+  <!-- Spectrum Source Screen -->
+  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h2 class="text-2xl font-bold mb-4">Choose Spectrum Source</h2>
-
-      <!-- Radio Buttons -->
       <div class="mb-4 text-left">
         <label class="inline-flex items-center mr-4">
-          <input
-            type="radio"
-            name="spectrum-source"
-            value="default"
-            checked
-            id="radio-default"
-            class="form-radio text-indigo-600"
-          />
+          <input id="radio-default" type="radio" name="spectrum-source" value="default" checked
+                 class="form-radio text-indigo-600"/>
           <span class="ml-2 text-gray-700">Use Default Spectrums</span>
         </label>
         <label class="inline-flex items-center">
-          <input
-            type="radio"
-            name="spectrum-source"
-            value="generate"
-            id="radio-generate"
-            class="form-radio text-indigo-600"
-          />
+          <input id="radio-generate" type="radio" name="spectrum-source" value="generate"
+                 class="form-radio text-indigo-600"/>
           <span class="ml-2 text-gray-700">Generate via AI</span>
         </label>
       </div>
-
-      <!-- If “Generate via AI” is selected, show this block -->
-      <div id="generate-section" class="mb-4 hidden text-left">
+      <div id="generate-section" class="hidden mb-4 text-left">
         <p class="text-gray-700 mb-2">Enter a Concept or Idea:</p>
-        <input
-          type="text"
-          id="idea-input"
-          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder="e.g. emotion, temperature, taste..."
-        />
-        <button
-          id="generate-btn"
-          class="mt-3 btn-primary w-full py-2 rounded-lg text-base font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
-        >
+        <input id="idea-input" type="text"
+               class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+               placeholder="e.g. emotion, temperature, taste..."/>
+        <button id="generate-btn"
+                class="mt-3 w-full py-2 rounded-lg text-base font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700">
           Generate Spectrums
         </button>
         <p id="prompt-status" class="mt-2 text-sm text-gray-500 invisible"></p>
       </div>
-
-      <!-- If “Use Default Spectrums” is selected, show this button -->
       <div id="default-section" class="mb-1 text-left">
-        <button
-          id="use-default-btn"
-          class="btn-secondary w-full py-2 rounded-lg text-base font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
-        >
+        <button id="use-default-btn"
+                class="w-full py-2 rounded-lg text-base font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700">
           Use Default Spectrums
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ============================
-       3) GAME SCREEN
-       ============================ -->
-  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6 bg-gray-100">
-  <!-- Header -->
-  <header class="w-full max-w-xl text-center mb-6">
-    <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
-  </header>
+  <!-- Game Screen -->
+  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6">
+    <header class="w-full max-w-xl text-center mb-6">
+      <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
+    </header>
 
-  <!-- Semicircle + Needle -->
-  <div class="w-full max-w-xs mb-4">
-    <div class="slider-container">
-      <div class="semi-circle">
-        <div id="target-overlay" class="target-overlay"></div>
-        <div id="guess-marker" class="guess-marker">
-          <div class="needle-stick"></div>
-          <div class="needle-base"></div>
+    <div class="w-full max-w-xs mb-4">
+      <div class="slider-container">
+        <div class="semi-circle">
+          <div id="target-overlay" class="target-overlay"></div>
+          <div id="guess-marker" class="guess-marker">
+            <div class="needle-stick"></div>
+            <div class="needle-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
+      <div id="left-concept" class="text-red-500">Hot</div>
+      <div id="right-concept" class="text-blue-500">Cold</div>
+    </div>
+
+    <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md"></div>
+
+    <div class="w-full max-w-md space-y-4">
+      <div id="psychic-controls" class="hidden">
+        <button id="hide-target-btn"
+                class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700">
+          Hide Target &amp; Pass to Guessers
+        </button>
+      </div>
+
+      <div id="guesser-controls" class="hidden flex flex-col items-center">
+        <div class="horizontal-slider-container w-full">
+          <input id="active-horizontal-slider" type="range" min="0" max="180" value="90" class="w-full"/>
+        </div>
+        <button id="lock-guess-btn"
+                class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700">
+          Lock In Guess
+        </button>
+      </div>
+
+      <div id="opponent-controls" class="hidden flex space-x-2">
+        <button id="choose-left-btn"
+                class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md">
+          Left of Target
+        </button>
+        <button id="choose-right-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md">
+          Right of Target
+        </button>
+      </div>
+
+      <div id="next-round-controls" class="hidden flex flex-col items-center">
+        <div id="round-result"
+             class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full">
+        </div>
+        <button id="next-round-btn"
+                class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700">
+          Next Round
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
+          <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
+          <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
+        </div>
+        <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
+          <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
+          <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
+        </div>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
+        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
+          <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
+          <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
+        </div>
+        <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
+          <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
+          <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
+        </div>
+      </div>
+      <div>
+        <div id="message-area"
+             class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base">
+          Game will begin when you press “Hide Target &amp; Pass to Guessers.”
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Labels -->
-  <div class="spectrum-labels w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
-    <div id="left-concept" class="text-red-500">Hot</div>
-    <div id="right-concept" class="text-blue-500">Cold</div>
-  </div>
-
-  <!-- Instructions -->
-  <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md">
-    <!-- “Team X Psychic: View the target.” etc. -->
-  </div>
-
-  <!-- Controls (Hide Target, Slider, Lock Guess, Left/Right, Next Round) -->
-  <div class="w-full max-w-md space-y-4">
-    <!-- Psychic’s “Hide Target & Pass” button -->
-    <div id="psychic-controls" class="hidden">
-      <button
-        id="hide-target-btn"
-        class="btn-secondary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700"
-      >
-        Hide Target &amp; Pass to Guessers
-      </button>
-    </div>
-
-    <!-- Guesser’s slider + “Lock In Guess” -->
-    <div id="guesser-controls" class="hidden flex flex-col items-center">
-      <div class="horizontal-slider-container w-full">
-        <input
-          type="range"
-          min="0"
-          max="180"
-          value="90"
-          id="active-horizontal-slider"
-          class="w-full"
-        />
-      </div>
-      <button
-        id="lock-guess-btn"
-        class="btn-contrast w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-green-600 text-white hover:bg-green-700"
-      >
-        Lock In Guess
-      </button>
-    </div>
-
-    <!-- Opponent’s Left/Right buttons -->
-    <div id="opponent-controls" class="hidden flex space-x-2">
-      <button
-        id="choose-left-btn"
-        class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
-      >
-        Left of Target
-      </button>
-      <button
-        id="choose-right-btn"
-        class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md"
-      >
-        Right of Target
-      </button>
-    </div>
-
-    <!-- Next Round display + button -->
-    <div id="next-round-controls" class="hidden flex flex-col items-center">
-      <div
-        id="round-result"
-        class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full"
-      ></div>
-      <button
-        id="next-round-btn"
-        class="btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700"
-      >
-        Next Round
-      </button>
-    </div>
-  </div>
-
-  <!-- Scoreboard & Info -->
-  <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
-    <div class="grid grid-cols-2 gap-4 mb-4">
-      <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
-        <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
-        <p id="team1-score-display" class="text-2xl sm:text-3xl font-bold text-blue-600">0</p>
-      </div>
-      <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
-        <h3 id="team2-name" class="text-sm sm:text-base font-medium text-red-800">Team 2</h3>
-        <p id="team2-score-display" class="text-2xl sm:text-3xl font-bold text-red-600">0</p>
-      </div>
-    </div>
-
-    <div class="flex flex-col sm:flex-row sm:gap-4 mb-4">
-      <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg mb-2 sm:mb-0">
-        <h3 class="text-sm sm:text-base font-medium text-gray-600">Current Turn</h3>
-        <p id="current-turn" class="text-lg sm:text-xl font-semibold text-gray-800">Team 1 Psychic</p>
-      </div>
-      <div class="flex-1 bg-gray-50 p-3 sm:p-4 rounded-lg">
-        <h3 class="text-sm sm:text-base font-medium text-gray-600">Target Score</h3>
-        <p id="target-score" class="text-lg sm:text-xl font-semibold text-gray-800">10</p>
-      </div>
-    </div>
-
-    <div>
-      <div
-        id="message-area"
-        class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base"
-      >
-        Game will begin when you press “Hide Target & Pass to Guessers.”
-      </div>
-    </div>
-  </div>
-</div>
-
   <script>
-    // —————————————————————————
-    // 1) Built-in Defaults
-    // —————————————————————————
     const defaultSpectra = [
       ["Hot","Cold"], ["Good","Evil"], ["Simple","Complex"],
       ["Cheap","Expensive"], ["Safe","Dangerous"], ["Soft","Hard"],
@@ -264,15 +251,12 @@
       ["Tradition","Innovation"], ["Freedom","Security"], ["Bad","Good"]
     ];
 
-    // —————————————————————————
-    // 2) gameState Object
-    // —————————————————————————
     const gameState = {
       team1: { name: "Team 1", score: 0 },
       team2: { name: "Team 2", score: 0 },
       pointsToWin: 10,
       currentTurn: "team1-psychic",
-      currentSpectrum: [],      // will hold either default or AI
+      currentSpectrum: [],
       spectrumIndex: 0,
       targetPosition: 0,
       guess: 90,
@@ -281,20 +265,15 @@
       sdScores: { team1: 0, team2: 0 }
     };
 
-    // —————————————————————————
-    // 3) DOM References
-    // —————————————————————————
     const setupScreen    = document.getElementById("setup-screen");
     const promptScreen   = document.getElementById("prompt-screen");
     const gameScreen     = document.getElementById("game-screen");
 
-    // Setup inputs/buttons
     const startBtn       = document.getElementById("start-btn");
     const team1Input     = document.getElementById("team1");
     const team2Input     = document.getElementById("team2");
     const pointsInput    = document.getElementById("points");
 
-    // Spectrum-source inputs/buttons
     const radioDefault   = document.getElementById("radio-default");
     const radioGenerate  = document.getElementById("radio-generate");
     const generateSection= document.getElementById("generate-section");
@@ -304,7 +283,6 @@
     const promptStatus   = document.getElementById("prompt-status");
     const useDefaultBtn  = document.getElementById("use-default-btn");
 
-    // Game-screen controls
     const hideTargetBtn  = document.getElementById("hide-target-btn");
     const activeSlider   = document.getElementById("active-horizontal-slider");
     const lockGuessBtn   = document.getElementById("lock-guess-btn");
@@ -325,12 +303,8 @@
     const roundResult    = document.getElementById("round-result");
     const guessMarker    = document.getElementById("guess-marker");
 
-    // 4) BACKEND URL (no trailing slash!)
     const BACKEND_URL = "https://jittery-silvia-acepocalypse-a3a51961.koyeb.app";
 
-    // —————————————————————————
-    // 5) Toggling “Generate vs Default” UI
-    // —————————————————————————
     function updatePromptUI() {
       if (radioGenerate.checked) {
         generateSection.classList.remove("hidden");
@@ -343,31 +317,19 @@
     radioDefault.addEventListener("change", updatePromptUI);
     radioGenerate.addEventListener("change", updatePromptUI);
 
-    // —————————————————————————
-    // 6) AI FETCH FUNCTION
-    // —————————————————————————
     async function fetchSpectrums(idea, count = 30) {
-      const url = `${BACKEND_URL}/api/generateSpectrums`;
-      console.log("→ POST to:", url, "body:", { idea, count });
-      const resp = await fetch(url, {
+      const resp = await fetch(`${BACKEND_URL}/api/generateSpectrums`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idea, count })
       });
-      console.log("← Status:", resp.status);
       if (!resp.ok) {
         const text = await resp.text();
-        console.error("   Error text:", text);
-        throw new Error(`HTTP ${resp.status}`);
+        throw new Error(`HTTP ${resp.status}: ${text}`);
       }
-      const payload = await resp.json();
-      console.log("← Response JSON:", payload);
-      return payload;
+      return resp.json();
     }
 
-    // —————————————————————————
-    // 7) “Generate via AI” BUTTON HANDLER
-    // —————————————————————————
     generateBtn.addEventListener("click", async () => {
       const idea = ideaInput.value.trim();
       if (!idea) {
@@ -384,7 +346,7 @@
       try {
         const data = await fetchSpectrums(idea, 30);
         if (!Array.isArray(data.spectrums) || data.spectrums.length < 30) {
-          throw new Error("Bad or too few spectrums returned");
+          throw new Error("Invalid spectrums returned");
         }
         gameState.currentSpectrum = data.spectrums;
         promptStatus.textContent = "Spectrums generated!";
@@ -397,7 +359,7 @@
           startNewRound();
         }, 500);
       } catch (err) {
-        console.error("❌ Generation error:", err);
+        console.error(err);
         promptStatus.textContent = "Generation failed. Try again.";
         promptStatus.classList.remove("text-gray-500", "text-green-600");
         promptStatus.classList.add("text-red-500");
@@ -405,20 +367,13 @@
       }
     });
 
-    // —————————————————————————
-    // 8) “Use Default Spectrums” BUTTON HANDLER
-    // —————————————————————————
     useDefaultBtn.addEventListener("click", () => {
-      // Copy default array into gameState.currentSpectrum
       gameState.currentSpectrum = defaultSpectra.slice();
       promptScreen.classList.add("hidden");
       gameScreen.classList.remove("hidden");
       startNewRound();
     });
 
-    // —————————————————————————
-    // 9) “Start Game” BUTTON (from Setup → Spectrum Source)
-    // —————————————————————————
     startBtn.addEventListener("click", () => {
       gameState.team1.name  = team1Input.value.trim() || "Team 1";
       gameState.team2.name  = team2Input.value.trim() || "Team 2";
@@ -430,38 +385,30 @@
       gameState.sdScores = { team1: 0, team2: 0 };
       gameState.spectrumIndex = 0;
 
-      // Update scoreboard placeholders
-      document.getElementById("team1-name").textContent = gameState.team1.name;
-      document.getElementById("team2-name").textContent = gameState.team2.name;
-      team1Score.textContent = "0";
-      team2Score.textContent = "0";
+      team1NameEl.textContent = gameState.team1.name;
+      team2NameEl.textContent = gameState.team2.name;
+      team1Score.textContent  = "0";
+      team2Score.textContent  = "0";
       targetScoreEl.textContent = gameState.pointsToWin;
 
-      // Hide Setup screen, show Spectrum Source screen
       setupScreen.classList.add("hidden");
       promptScreen.classList.remove("hidden");
       updatePromptUI();
     });
 
-    // —————————————————————————
-    // 10) All the Game Logic (same as before)
-    // —————————————————————————
     function startNewRound() {
       roundResult.textContent = "";
 
-      // Grab whichever array was chosen: default or AI
       const arr = gameState.currentSpectrum;
-      const [leftWord, rightWord] = arr[ gameState.spectrumIndex % arr.length ];
+      const [leftWord, rightWord] = arr[gameState.spectrumIndex % arr.length];
       gameState.spectrumIndex++;
 
       leftConcept.textContent  = leftWord;
       rightConcept.textContent = rightWord;
 
-      // Random target center [4°,176°]
       gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
       gameState.guess = 90;
 
-      // Build the 40° conic‐gradient “pizza slice”
       const center    = gameState.targetPosition;
       const bandStart = center - 20;
       const fromAngle = bandStart + 270;
@@ -482,7 +429,6 @@
       updateNeedle(90);
       activeSlider.style.display = "none";
 
-      // Alternate Psychic
       if (
         gameState.currentTurn === "team2-opponent" ||
         gameState.currentTurn === "team2-guess"   ||
@@ -496,7 +442,7 @@
       }
 
       instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
-      messageArea.textContent = "Press “Hide Target & Pass to Guessers.”";
+      messageArea.textContent     = "Press “Hide Target & Pass to Guessers.”";
 
       updateControlsVisibility();
     }
@@ -592,7 +538,6 @@
         gameState.currentTurn = "post-reveal";
         updateControlsVisibility();
 
-        // Check win conditions
         const t1 = gameState.team1.score;
         const t2 = gameState.team2.score;
         const target = gameState.pointsToWin;
@@ -605,13 +550,12 @@
             gameState.suddenDeath = true;
             gameState.sdScores = { team1: 0, team2: 0 };
             setTimeout(() => {
-              alert("Tie at target → Sudden Death begins.");
+              alert("Tie at target! Sudden Death begins.");
               startNewRound();
             }, 500);
           }
         }
       } else {
-        // Sudden death logic (similar)
         if (pPts > 0) {
           gameState.sdScores[psychicTeam] += pPts;
           resultText = `${gameState[psychicTeam].name} scores ${pPts} points!`;
@@ -649,7 +593,7 @@
           }, 500);
         } else {
           setTimeout(() => {
-            alert("Still tied → next Sudden Death round");
+            alert("Still tied! Next Sudden Death round.");
             startNewRound();
           }, 500);
         }
@@ -697,7 +641,7 @@
       if (!document.getElementById("restart-btn")) {
         const btn = document.createElement("button");
         btn.id = "restart-btn";
-        btn.className = "btn-primary w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md mt-4 bg-gray-800 text-white hover:bg-gray-700";
+        btn.className = "w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700 mt-4";
         btn.textContent = "New Game";
         btn.onclick = () => {
           document.getElementById("restart-btn").remove();
@@ -708,15 +652,13 @@
       }
     }
 
-    // Keep team‐name display in sync
-    team1Input.addEventListener("input", (e) => {
+    document.getElementById("team1").addEventListener("input", (e) => {
       document.getElementById("team1-name").textContent = e.target.value.trim() || "Team 1";
     });
-    team2Input.addEventListener("input", (e) => {
+    document.getElementById("team2").addEventListener("input", (e) => {
       document.getElementById("team2-name").textContent = e.target.value.trim() || "Team 2";
     });
 
-    // Attach game‐flow listeners
     hideTargetBtn.addEventListener("click", hideTarget);
     lockGuessBtn.addEventListener("click", lockGuess);
     chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
@@ -724,7 +666,6 @@
     nextRoundBtn.addEventListener("click", nextRound);
 
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("Wavelength loaded: Setup → Source → Game");
       updatePromptUI();
     });
   </script>
