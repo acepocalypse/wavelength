@@ -57,15 +57,13 @@ Do not include any extra text or commentary—only the JSON array.
 """.strip()
 
     try:
-        # Use genai to generate text
-        response = model.generate_text(
-            prompt=prompt_text,
+        response = model.generate_content(
+            contents=prompt_text,
             temperature=0.85,
             max_output_tokens=1024
         )
-        generated = response.text  # The raw text output from Gemini
+        generated = response.text
 
-        # Parse the JSON array from the model output
         spectrums = json.loads(generated)
         if (
             not isinstance(spectrums, list)
