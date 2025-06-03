@@ -55,12 +55,16 @@ Output a JSON array of length {count}, for example:
 
 Do not include any extra text or commentary—only the JSON array.
 """.strip()
-
+    
+    generation_config = types.GenerateContentConfig(
+        max_output_tokens=1024,
+        temperature=1.25
+    )
+        
     try:
         response = model.generate_content(
             contents=prompt_text,
-            temperature=0.85,
-            max_output_tokens=1024
+            generation_config=generation_config
         )
         generated = response.text
 
