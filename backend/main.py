@@ -13,7 +13,6 @@ load_dotenv()
 API_KEY = os.getenv("GENAI_API_KEY")
 if not API_KEY:
     raise RuntimeError("Please set GENAI_API_KEY in your environment or .env file")
-# genai.configure(api_key=API_KEY)
 client = genai.Client(api_key=API_KEY)
 
 app = FastAPI()
@@ -25,9 +24,6 @@ app.add_middleware(
     allow_methods=["POST", "GET", "OPTIONS"],
     allow_headers=["*"],
 )
-
-# Instantiate a GenerativeModel from genai
-# model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
 class SpectrumRequest(BaseModel):
     idea: str
@@ -57,11 +53,6 @@ Output a JSON array of length {count}, for example:
 
 Do not include any extra text or commentary—only the JSON array.
 """.strip()
-    
-    # generation_config = types.GenerateContentConfig(
-    #     max_output_tokens=1024,
-    #     temperature=1.25
-    # )
         
     try:
         response = client.models.generate_content(
@@ -72,17 +63,14 @@ Do not include any extra text or commentary—only the JSON array.
                 temperature=1.25
             )
         )
-
-        # response = client.models.generate_content(
-        # model="gemini-2.5-flash-preview-05-20", contents=prompt_text,
-        # generation_config=generation_config
-        # )
         
-        # response = model.generate_content(
-        #     contents=prompt_text,
-        #     generation_config=generation_config
-        # )
-        generated = response.text
+        if response.candidates and len(response.candidates) > 0:
+            if response.candidates[0].content and response.candidates[0].content.parts:
+                generated = response.candidates[0].content.parts[0].text
+            else:
+                raise ValueError("No text content in response")
+        else:
+            raise ValueError("No candidates in response")
 
         spectrums = json.loads(generated)
         if (
