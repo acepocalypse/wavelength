@@ -104,7 +104,7 @@
 <body class="min-h-screen flex flex-col items-center">
 
   <!-- Setup Screen -->
-  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen">
+  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen px-4">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h1 class="text-3xl font-bold mb-4">Wavelength Setup</h1>
       <div class="space-y-4 mb-6 text-left">
@@ -144,7 +144,7 @@
         <label class="inline-flex items-center">
           <input id="radio-generate" type="radio" name="spectrum-source" value="generate"
                  class="form-radio text-indigo-600"/>
-          <span class="ml-2 text-gray-700">Generate via AI</span>
+          <span class="ml-2 text-gray-700">Generate Custom</span>
         </label>
       </div>
       <div id="generate-section" class="hidden mb-4 text-left">
@@ -198,10 +198,16 @@
 
     <div class="w-full max-w-md space-y-4">
       <div id="psychic-controls" class="hidden">
-        <button id="reveal-target-btn"
-                class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-indigo-600 text-white hover:bg-indigo-700 mb-4">
-          Reveal Target
-        </button>
+        <div class="flex mb-4">
+          <button id="reveal-target-btn"
+                  class="flex-1 py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-indigo-600 text-white hover:bg-indigo-700 mr-2">
+            Reveal Target
+          </button>
+          <button id="change-clue-btn"
+                  class="py-3 px-4 rounded-lg text-base font-semibold shadow-md bg-yellow-500 text-white hover:bg-yellow-600">
+            Change Clue
+          </button>
+        </div>
         <button id="hide-target-btn"
                 class="w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-purple-600 text-white hover:bg-purple-700 hidden">
           Hide Target &amp; Pass to Guessers
@@ -223,11 +229,11 @@
       <div id="opponent-controls" class="hidden flex space-x-2">
         <button id="choose-left-btn"
                 class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md">
-          Left of Target
+          Left of Needle
         </button>
         <button id="choose-right-btn"
                 class="bg-blue-600 hover:bg-blue-700 text-white flex-1 py-3 rounded-lg font-semibold text-base sm:text-lg shadow-md">
-          Right of Target
+          Right of Needle
         </button>
       </div>
 
@@ -340,7 +346,8 @@
       guess: 90,
       isPlaying: false,
       suddenDeath: false,
-      sdScores: { team1: 0, team2: 0 }
+      sdScores: { team1: 0, team2: 0 },
+      clueChangesLeft: 10  // Track clue changes at the game level, shared by both teams
     };
 
     const setupScreen    = document.getElementById("setup-screen");
@@ -470,15 +477,17 @@
     }
 
     startBtn.addEventListener("click", () => {
-      gameState.team1.name  = team1Input.value.trim() || "Team 1";
-      gameState.team2.name  = team2Input.value.trim() || "Team 2";
+      gameState.team1.name  = team1Input.value.trim() || "Team A";  // Default to Team A
+      gameState.team2.name  = team2Input.value.trim() || "Team B";  // Default to Team B
       gameState.pointsToWin = parseInt(pointsInput.value, 10) || 10;
 
       gameState.team1.score = 0;
       gameState.team2.score = 0;
+      gameState.clueChangesLeft = 10;  // Reset clue changes to 10 at game start
       gameState.suddenDeath = false;
       gameState.sdScores = { team1: 0, team2: 0 };
       gameState.spectrumIndex = 0;
+      gameState.currentTurn = "team1-psychic";  // Make Team A always go first
 
       team1NameEl.textContent = gameState.team1.name;
       team2NameEl.textContent = gameState.team2.name;
@@ -529,7 +538,11 @@
       updateNeedle(90);
       activeSlider.style.display = "none";
 
-      if (
+      // Always ensure Team A (team1) goes first on new game, otherwise alternate turns
+      if (gameState.spectrumIndex === 1) {  // First round of a new game
+        gameState.currentTurn = "team1-psychic";
+        currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
+      } else if (
         gameState.currentTurn === "team2-opponent" ||
         gameState.currentTurn === "team2-guess"   ||
         gameState.currentTurn === "team2-psychic"
@@ -541,12 +554,25 @@
         currentTurnEl.textContent = `${gameState.team2.name} Psychic`;
       }
 
+      // Update the Change Clue button to reflect remaining changes
+      const changeClueBtn = document.getElementById("change-clue-btn");
+      if (gameState.clueChangesLeft > 0) {
+        changeClueBtn.textContent = `Change Clue (${gameState.clueChangesLeft})`;
+        changeClueBtn.disabled = false;
+        changeClueBtn.classList.remove("opacity-50");
+      } else {
+        changeClueBtn.textContent = "No Changes Left";
+        changeClueBtn.disabled = true;
+        changeClueBtn.classList.add("opacity-50");
+      }
+
       instructionText.textContent = `${currentTurnEl.textContent}: Click button to see the target.`;
       messageArea.textContent     = 'Press "Reveal Target" to view the target position.';
 
       // Reset hide/reveal button states
       revealTargetBtn.classList.remove("hidden");
       hideTargetBtn.classList.add("hidden");
+      document.getElementById("change-clue-btn").classList.remove("hidden");
       
       updateControlsVisibility();
     }
@@ -555,28 +581,32 @@
       targetOverlay.style.display = "block";
       revealTargetBtn.classList.add("hidden");
       hideTargetBtn.classList.remove("hidden");
+      
+      // Hide the change clue button after target is revealed
+      document.getElementById("change-clue-btn").classList.add("hidden");
+      
       instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
       messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
     }
-
+    
     function hideTarget() {
       targetOverlay.style.display = "none";
 
       if (gameState.currentTurn === "team1-psychic") {
         gameState.currentTurn = "team1-guess";
         currentTurnEl.textContent = `${gameState.team1.name} Guessing`;
-        instructionText.textContent = `${gameState.team1.name} Guess: Place your guess.`;
+        instructionText.textContent = `${gameState.team1.name}: Place your guess on the spectrum.`;
       } else {
         gameState.currentTurn = "team2-guess";
         currentTurnEl.textContent = `${gameState.team2.name} Guessing`;
-        instructionText.textContent = `${gameState.team2.name} Guess: Place your guess.`;
+        instructionText.textContent = `${gameState.team2.name}: Place your guess on the spectrum.`;
       }
 
       activeSlider.style.display = "block";
       activeSlider.value = 90;
       updateNeedle(90);
 
-      messageArea.textContent = 'Adjust slider & press "Lock In Guess."';
+      messageArea.textContent = `Adjust slider and press "Lock In Guess". Your team can earn 2-4 points based on accuracy.`;
       updateControlsVisibility();
     }
 
@@ -590,52 +620,63 @@
       if (gameState.currentTurn === "team1-guess") {
         gameState.currentTurn = "team1-opponent";
         currentTurnEl.textContent = `${gameState.team2.name} Opponent Decision`;
-        instructionText.textContent = `${gameState.team2.name}: Left or Right of target?`;
+        instructionText.textContent = `${gameState.team2.name}: Guess if target is left or right of the needle?`;
       } else {
         gameState.currentTurn = "team2-opponent";
         currentTurnEl.textContent = `${gameState.team1.name} Opponent Decision`;
-        instructionText.textContent = `${gameState.team1.name}: Left or Right of target?`;
+        instructionText.textContent = `${gameState.team1.name}: Guess if target is left or right of the needle?`;
       }
-      messageArea.textContent = "Choose Left or Right.";
+      messageArea.textContent = "Choose Left or Right to try to score 1 point for your team.";
       updateControlsVisibility();
     }
 
     function opponentChoice(side) {
       const guessed = gameState.guess;
-      const actual  = gameState.targetPosition;
-      const diff    = Math.abs(guessed - actual);
+      const actual = gameState.targetPosition;
+      const diff = Math.abs(guessed - actual);
 
       let pPts = 0;
-      if (diff <= 4)       pPts = 4;
+      if (diff <= 4) pPts = 4;
       else if (diff <= 12) pPts = 3;
       else if (diff <= 20) pPts = 2;
-      else                 pPts = 0;
+      else pPts = 0;
 
-      let psychicTeam, oppTeam;
+      let activeTeam, oppTeam;
       if (gameState.currentTurn === "team1-opponent") {
-        psychicTeam = "team2";
-        oppTeam     = "team1";
+        activeTeam = "team1";
+        oppTeam = "team2";
       } else {
-        psychicTeam = "team1";
-        oppTeam     = "team2";
+        activeTeam = "team2";
+        oppTeam = "team1";
       }
+
+      // FIX: Consistently determine left/right direction
+      // From the perspective of the semi-circle, looking at it:
+      // - Target is LEFT of needle when target position < guess position
+      // - Target is RIGHT of needle when target position > guess position
+      const correctSide = actual < guessed ? "left" : "right";
 
       let resultText = "";
       if (!gameState.suddenDeath) {
+        // Award points to active team based on accuracy
         if (pPts > 0) {
-          gameState[psychicTeam].score += pPts;
-          resultText = `${gameState[psychicTeam].name} scores ${pPts} point${pPts>1?"s":""}!`;
+          gameState[activeTeam].score += pPts;
+          resultText = `${gameState[activeTeam].name} scores ${pPts} point${pPts>1?"s":""}!`;
         } else {
-          resultText = `${gameState[psychicTeam].name} scores 0 points.`;
+          resultText = `${gameState[activeTeam].name} scores 0 points.`;
         }
 
-        if (pPts < 4) {
-          const isLeftGuess = guessed < actual;
-          const correctSide = isLeftGuess ? "left" : "right";
+        // Check if opponent guessed correctly
+        if (pPts < 4) { // Only if active team didn't get perfect score
           if (side === correctSide) {
             gameState[oppTeam].score += 1;
             resultText += ` ${gameState[oppTeam].name} guessed correctly and gains 1 point!`;
+          } else {
+            resultText += ` ${gameState[oppTeam].name} guessed incorrectly, and gets 0 points.`;
           }
+        } else {
+          // If active team got perfect score, opponent can't score
+          resultText += ` Perfect guess! ${gameState[oppTeam].name} doesn't get a chance to score.`;
         }
 
         team1Score.textContent = gameState.team1.score;
@@ -676,11 +717,11 @@
         }
 
         if (pPts < 4) {
-          const isLeftGuess = guessed < actual;
-          const correctSide = isLeftGuess ? "left" : "right";
           if (side === correctSide) {
             gameState.sdScores[oppTeam] += 1;
-            resultText += ` ${gameState[oppTeam].name} guessed correctly and gains 1 point!`;
+            resultText += ` ${gameState[oppTeam].name} guessed correctly (${side}) and gains 1 point!`;
+          } else {
+            resultText += ` ${gameState[oppTeam].name} guessed incorrectly (${side}, correct was ${correctSide}) and gets 0 points.`;
           }
         }
 
@@ -763,7 +804,8 @@
         messageArea.parentNode.appendChild(btn);
       }
     }
-
+    
+    // Event listeners
     document.getElementById("team1").addEventListener("input", (e) => {
       document.getElementById("team1-name").textContent = e.target.value.trim() || "Team 1";
     });
@@ -777,6 +819,62 @@
     chooseLeftBtn.addEventListener("click", () => opponentChoice("left"));
     chooseRightBtn.addEventListener("click", () => opponentChoice("right"));
     nextRoundBtn.addEventListener("click", nextRound);
+    
+    const changeClueBtn = document.getElementById("change-clue-btn");
+    changeClueBtn.addEventListener("click", changeClue);
+    
+    function changeClue() {
+      // Check if any changes are left
+      if (gameState.clueChangesLeft <= 0) {
+        messageArea.textContent = "No clue changes left!";
+        return;
+      }
+      
+      // Decrement changes left
+      gameState.clueChangesLeft -= 1;
+      
+      // Get a new spectrum pair without advancing the round state
+      const arr = gameState.currentSpectrum;
+      gameState.spectrumIndex++; // Move to next spectrum
+      const [leftWord, rightWord] = arr[gameState.spectrumIndex % arr.length];
+      
+      leftConcept.textContent = leftWord;
+      rightConcept.textContent = rightWord;
+      
+      // Generate a new random target position
+      gameState.targetPosition = (Math.random() * (176 - 4)) + 4;
+      const center = gameState.targetPosition;
+      const bandStart = center - 20;
+      const fromAngle = bandStart + 270;
+      const gradient = `
+        conic-gradient(
+          from ${fromAngle}deg at 50% 100%,
+          #FBBF24 0deg   8deg,
+          #F87171 8deg  16deg,
+          #60A5FA 16deg 24deg,
+          #F87171 24deg 32deg,
+          #FBBF24 32deg 40deg,
+          transparent 40deg 180deg
+        )
+      `;
+      targetOverlay.style.background = gradient;
+      
+      // Reset needle to center
+      updateNeedle(90);
+      
+      // Update the change clue button text with remaining changes
+      const changesLeft = gameState.clueChangesLeft;
+      const changeClueBtn = document.getElementById("change-clue-btn");
+      if (changesLeft > 0) {
+        changeClueBtn.textContent = `Change Clue (${changesLeft})`;
+      } else {
+        changeClueBtn.textContent = "No Changes Left";
+        changeClueBtn.disabled = true;
+        changeClueBtn.classList.add("opacity-50");
+      }
+      
+      messageArea.textContent = `Spectrum changed. ${changesLeft} total change${changesLeft !== 1 ? 's' : ''} remaining.`;
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       updatePromptUI();
