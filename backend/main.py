@@ -3,8 +3,8 @@ import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,7 +13,8 @@ load_dotenv()
 API_KEY = os.getenv("GENAI_API_KEY")
 if not API_KEY:
     raise RuntimeError("Please set GENAI_API_KEY in your environment or .env file")
-genai.configure(api_key=API_KEY)
+# genai.configure(api_key=API_KEY)
+client = genai.Client(api_key="GENAI_API_KEY")
 
 app = FastAPI()
 
@@ -26,7 +27,7 @@ app.add_middleware(
 )
 
 # Instantiate a GenerativeModel from genai
-model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
+# model = genai.GenerativeModel('gemini-2.5-flash-preview-05-20')
 
 class SpectrumRequest(BaseModel):
     idea: str
@@ -63,10 +64,14 @@ Do not include any extra text or commentary—only the JSON array.
     )
         
     try:
-        response = model.generate_content(
-            contents=prompt_text,
-            generation_config=generation_config
+        response = client.models.generate_content(
+        model="gemini-2.5-flash-preview-05-20", contents=prompt_text,
+        generation_config=generation_config
         )
+        # response = model.generate_content(
+        #     contents=prompt_text,
+        #     generation_config=generation_config
+        # )
         generated = response.text
 
         spectrums = json.loads(generated)
