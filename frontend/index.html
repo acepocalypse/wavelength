@@ -274,10 +274,59 @@
 
   <script>
     const defaultSpectra = [
-      ["Hot","Cold"], ["Good","Evil"], ["Simple","Complex"],
-      ["Cheap","Expensive"], ["Safe","Dangerous"], ["Soft","Hard"],
-      ["Rare","Common"], ["Quiet","Loud"], ["Weak","Strong"],
-      ["Tradition","Innovation"], ["Freedom","Security"], ["Bad","Good"]
+      ["Cool teacher", "Strict teacher"],
+      ["Low effort Halloween costume", "High effort Halloween costume"],
+      ["Would lose to this animal", "Would beat this animal"],
+      ["Introvert-coded job", "Extrovert-coded job"],
+      ["Unacceptable hat", "Acceptable hat"],
+      ["Good person", "Bad person"],
+      ["Culturally insignificant", "Culturally significant"],
+      ["Exciting crime", "Boring crime"],
+      ["Would survive a zombie apocalypse", "Would die immediately"],
+      ["Toxic workplace", "Healthy workplace"],
+      ["Low IQ take", "Galaxy brain take"],
+      ["Boomer opinion", "Gen Z opinion"],
+      ["Corporate vibe", "Creative vibe"],
+      ["Underrated food", "Overrated food"],
+      ["Quiet activity", "Loud activity"],
+      ["Would thrive on Mars", "Would struggle on Mars"],
+      ["Best office snack", "Worst office snack"],
+      ["Underrated chore", "Overrated chore"],
+      ["Would enjoy camping", "Would hate camping"],
+      ["Introvert energy", "Extrovert energy"],
+      ["Ideal vacation", "Worst vacation"],
+      ["Strong coffee", "Weak coffee"],
+      ["Looks easy", "Actually hard"],
+      ["Team player", "Lone wolf"],
+      ["Most likely to own a cat", "Most likely to own a dog"],
+      ["Best season", "Worst season"],
+      ["Slow decision-maker", "Fast decision-maker"],
+      ["Over-prepared", "Under-prepared"],
+      ["Relaxing weekend", "Stressful weekend"],
+      ["Early bird", "Night owl"],
+      ["Overexplainer", "Man of mystery"],
+      ["Good at small talk", "Bad at small talk"],
+      ["Overpacker", "Underpacker"],
+      ["Rule follower", "Rule breaker"],
+      ["Planner", "Spontaneous"],
+      ["Reads the terms & conditions", "Clicks 'Accept' immediately"],
+      ["Optimist", "Pessimist"],
+      ["Best use of $5", "Worst use of $5"],
+      ["Extremely online", "Totally offline"],
+      ["Would nail karaoke", "Would bomb karaoke"],
+      ["Trusts the process", "Needs immediate results"],
+      ["Overthinks everything", "Goes with the flow"],
+      ["Most likely to cry at a movie", "Most likely to fall asleep during a movie"],
+      ["Group project hero", "Group project ghoster"],
+      ["Best meeting snack", "Worst meeting snack"],
+      ["Weekend warrior", "Weekday grinder"],
+      ["Impulse buyer", "Frugal shopper"],
+      ["Most likely to go viral", "Most likely to go unnoticed"],
+      ["Always early", "Always late"],
+      ["Minimalist aesthetic", "Maximalist aesthetic"],
+      ["Worst app notification", "Best app notification"],
+      ["Reads the book", "Waits for the movie"],
+      ["Would survive in the wild", "Would call for help in 10 minutes"]
     ];
 
     const gameState = {
@@ -398,11 +447,27 @@
     });
 
     useDefaultBtn.addEventListener("click", () => {
-      gameState.currentSpectrum = defaultSpectra.slice();
+      gameState.currentSpectrum = randomizeDefaultSpectra();
       promptScreen.classList.add("hidden");
       gameScreen.classList.remove("hidden");
       startNewRound();
     });
+    
+    function randomizeDefaultSpectra() {
+      // Create a copy of the default spectra
+      const spectra = defaultSpectra.slice();
+      
+      // Shuffle the array (Fisher-Yates algorithm)
+      for (let i = spectra.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [spectra[i], spectra[j]] = [spectra[j], spectra[i]];
+      }
+      
+      // Randomly flip some pairs (50% chance for each pair)
+      return spectra.map(pair => {
+        return Math.random() < 0.5 ? pair : [pair[1], pair[0]];
+      });
+    }
 
     startBtn.addEventListener("click", () => {
       gameState.team1.name  = team1Input.value.trim() || "Team 1";
