@@ -40,27 +40,32 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-        You are a JSON data generator for a party word game. Your job is to generate exactly {count} fun and imaginative opposing pairs that could be placed on opposite ends of a spectrum.
+        You are generating JSON data for a party game where players guess a hidden point on a spectrum between two opposing ideas.
+
+        Generate exactly {count} fun and creative **spectrum pairs** inspired by the theme: "{idea}".
 
         Each pair should:
-        - Be intuitive enough for anyone to understand.
-        - Be interesting to talk about and spark debate.
-        - Avoid overused or obvious pairs like "Hot-Cold" or "Happy-Sad".
-        - Feel like they belong on a dial—where players can guess *how much* something is one side vs the other.
+        - Be **contextual, opinion-driven, or socially debatable**
+        - Feel like something players could **argue about or laugh about**
+        - Use **short phrases or descriptors**, not just adjectives
+        - Avoid generic or overused opposites like "Hot/Cold" or "Happy/Sad"
+        - Reflect **modern, cultural, behavioral, or humorous** contrasts
 
-        The theme for your pairs is: "{idea}". Be creative, surprising, and humorous if possible. Use metaphors, pop culture references, abstract ideas, or quirky opposites.
+        Examples of the *style* we want:
+        - “Would make a good pirate” vs “Would make a bad pirate”
+        - “Culturally significant” vs “Culturally insignificant”
+        - “Fboy” vs “Husband”
+        - “Exciting crime” vs “Boring crime”
 
-        Output ONLY valid JSON. No comments, no extra explanation, no markdown formatting.
+        Your output must be **valid JSON only**: an array of objects with "left" and "right" keys.
 
-        Format:
+        Output format:
         [
-        {{"left": "Cats", "right": "Dogs"}},
-        {{"left": "Picnic", "right": "Fine Dining"}},
+        {{"left": "Unacceptable hat", "right": "Acceptable hat"}},
+        {{"left": "Could not defeat this animal", "right": "Could defeat this animal"}},
         ...
         ]
-
-        Output exactly {count} pairs, where each object contains "left" and "right" keys.
-        """.strip()
+        """
         
     try:
         response = client.models.generate_content(
