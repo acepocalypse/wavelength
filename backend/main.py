@@ -40,26 +40,26 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-Given the concept: "{idea}"
-Return exactly {count} opposite-end word pairs suitable for a Wavelength spectrum, be creative and fun/funny.
-Each pair must be a JSON object with keys "left" and "right".
-Output a JSON array of length {count}, for example:
+        Given the concept: "{idea}"
+        Return exactly {count} opposite-end word pairs suitable for a Wavelength spectrum.
+        Be creative and fun/funny but avoid words that is hard to understand non-common.
+        Each pair must be a JSON object with keys "left" and "right".
+        Output a JSON array of length {count}, for example:
 
-[
-  {{"left":"Hot","right":"Cold"}},
-  {{"left":"Joy","right":"Sadness"}},
-  ...
-]
+        [
+        {{"left":"Hot","right":"Cold"}},
+        {{"left":"Joy","right":"Sadness"}},
+        ...
+        ]
 
-Do not include any extra text or commentary—only the JSON array.
-""".strip()
+        Do not include any extra text or commentary—only the JSON array.
+        """.strip()
         
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash-preview-05-20",
             contents=prompt_text,
             config=types.GenerateContentConfig(
-                max_output_tokens=1024,
                 temperature=1.25
             )
         )
