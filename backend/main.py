@@ -40,7 +40,7 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-        You are a JSON data generator. Generate exactly {count} pairs of opposing concepts based on the theme: "{idea}".
+        You are a JSON data generator. Generate exactly {count} pairs of opposing concepts (could be words/phrases/situations/etc) based on the theme: "{idea}". Be crative and fun but keep in mind that pairs should be opposites or contrasting concepts with a spectrum between them.
         Your output must be valid JSON and nothing else - no explanation, no markdown formatting, no comments.
 
         Format the output as an array of objects, where each object has "left" and "right" properties.
@@ -60,7 +60,7 @@ async def generate_spectrums(req: SpectrumRequest):
             model="gemini-2.5-flash-preview-05-20",
             contents=prompt_text,
             config=types.GenerateContentConfig(
-                temperature=1.25
+                temperature=1.3
             )
         )
         
