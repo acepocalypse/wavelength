@@ -21,7 +21,7 @@
       width: 100%;
       max-width: var(--full-width);
       height: var(--container-height);
-      margin: 0 auto 1rem;
+      margin: 0 auto 0.25rem; /* Reduced from 1rem to 0.25rem */
     }
     .semi-circle {
       position: relative;
@@ -79,6 +79,10 @@
       z-index: 5;
     }
     .hidden { display: none; }
+    .spectrum-word {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -154,7 +158,7 @@
       <h1 class="text-4xl font-bold text-gray-900">Wavelength</h1>
     </header>
 
-    <div class="w-full max-w-sm mb-4">
+    <div class="w-full max-w-sm mb-1"> <!-- Reduced from mb-4 to mb-1 -->
       <div class="slider-container">
         <div class="semi-circle">
           <div id="target-overlay" class="target-overlay"></div>
@@ -166,9 +170,9 @@
       </div>
     </div>
 
-    <div class="w-full max-w-xs flex justify-between text-sm sm:text-base font-bold mb-2 px-2">
-      <div id="left-concept" class="text-red-500">Hot</div>
-      <div id="right-concept" class="text-blue-500">Cold</div>
+    <div class="w-full max-w-sm flex justify-between text-sm sm:text-base font-bold mb-4">
+      <div id="left-concept" class="spectrum-word text-red-500">Hot</div>
+      <div id="right-concept" class="spectrum-word text-blue-500">Cold</div>
     </div>
 
     <div id="instruction-text" class="text-center text-lg sm:text-xl font-semibold text-gray-800 mb-4 w-full max-w-md"></div>
@@ -219,7 +223,7 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-xl">
+    <div class="bg-white rounded-xl p-4 sm:p-6 shadow-md mt-6 w-full max-w-sm">
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
           <h3 id="team1-name" class="text-sm sm:text-base font-medium text-blue-800">Team 1</h3>
