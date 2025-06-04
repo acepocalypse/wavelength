@@ -139,6 +139,23 @@
               class="w-full py-3 my-3 rounded-lg text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700">
         Start Game
       </button>
+      <button id="how-to-play-btn" class="mt-4 text-blue-600 underline">
+        How to Play
+      </button>
+      <div id="new-player-guide" class="mt-2 p-4 bg-gray-100 rounded shadow text-left max-w-md hidden">
+        <h2 class="text-lg font-semibold mb-2">How to Play</h2>
+        <ol class="list-decimal list-inside text-sm text-gray-700 space-y-2">
+          <li>The psychic gives a clue to help the guesser accurately place the needle to the target.</li>
+          <li>Needle on target means SCORE! 
+        <ul class="list-disc list-inside ml-4">
+          <li>4 points for the center of the target.</li>
+          <li>3 and 2 points for the outer portions of the target.</li>
+        </ul>
+          </li>
+          <li>If playing team mode, the opposing team can steal 1 point by guessing where the target is in relation to the needle (Left/Right).</li>
+          <li>Enjoy the game!</li>
+        </ol>
+      </div>
     </div>
     <footer class="text-center text-xs text-gray-500 mt-4">
       Adapted from the table-top game Wavelength created by Alex Hague, Justin Vickers, and Wolfgang Warsch.
@@ -906,6 +923,10 @@
     document.addEventListener("DOMContentLoaded", () => {
       updatePromptUI();
     });
+    document.getElementById("how-to-play-btn").addEventListener("click", () => {
+  const guide = document.getElementById("new-player-guide");
+  guide.classList.toggle("hidden");
+});
   </script>
 </body>
 </html>
