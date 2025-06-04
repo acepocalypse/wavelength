@@ -124,6 +124,17 @@
                  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
         </div>
       </div>
+      <div id="simple-mode-section" class="mb-6 text-left">
+        <label class="inline-flex items-center">
+          <input id="simple-mode-toggle" type="checkbox" class="form-checkbox text-indigo-600"/>
+          <span class="ml-2 text-gray-700">2-3 Players</span>
+        </label>
+        <div id="rounds-input-section" class="mt-2 hidden">
+          <label for="rounds" class="block text-sm font-medium text-gray-700">Number of Rounds</label>
+          <input id="rounds" type="number" value="5" min="1"
+                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"/>
+        </div>
+      </div>
       <button id="start-btn"
               class="w-full py-3 rounded-lg text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700">
         Start Game
@@ -347,7 +358,10 @@
       isPlaying: false,
       suddenDeath: false,
       sdScores: { team1: 0, team2: 0 },
-      clueChangesLeft: 10  // Track clue changes at the game level, shared by both teams
+      clueChangesLeft: 10,  // Track clue changes at the game level, shared by both teams
+      simpleMode: false,
+      totalRounds: 0,
+      currentRound: 0
     };
 
     const setupScreen    = document.getElementById("setup-screen");
@@ -476,38 +490,61 @@
       });
     }
 
+    const simpleModeToggle   = document.getElementById("simple-mode-toggle");
+    const roundsInputSection = document.getElementById("rounds-input-section");
+    const roundsInput        = document.getElementById("rounds");
+
+    simpleModeToggle.addEventListener("change", () => {
+      if(simpleModeToggle.checked) {
+        roundsInputSection.classList.remove("hidden");
+        // Hide team and points inputs
+        team1Input.parentElement.classList.add("hidden");
+        team2Input.parentElement.classList.add("hidden");
+        pointsInput.parentElement.classList.add("hidden");
+      } else {
+        roundsInputSection.classList.add("hidden");
+        team1Input.parentElement.classList.remove("hidden");
+        team2Input.parentElement.classList.remove("hidden");
+        pointsInput.parentElement.classList.remove("hidden");
+      }
+    });
+
     startBtn.addEventListener("click", () => {
-      gameState.team1.name  = team1Input.value.trim() || "Team A";  // Default to Team A
-      gameState.team2.name  = team2Input.value.trim() || "Team B";  // Default to Team B
-      gameState.pointsToWin = parseInt(pointsInput.value, 10) || 10;
+      if(simpleModeToggle.checked) {
+        gameState.simpleMode   = true;
+        gameState.totalRounds  = parseInt(roundsInput.value, 10) || 5;
+        gameState.currentRound = 1;
+        // Set default names for display in simple mode
+        gameState.team1.name = "Player 1";
+        gameState.team2.name = "Player 2";
+        team1NameEl.textContent = gameState.team1.name;
+        team2NameEl.textContent = gameState.team2.name;
+        targetScoreEl.textContent = gameState.totalRounds;
+      } else {
+        gameState.team1.name  = team1Input.value.trim() || "Team A";
+        gameState.team2.name  = team2Input.value.trim() || "Team B";
+        gameState.pointsToWin = parseInt(pointsInput.value, 10) || 10;
+        targetScoreEl.textContent = gameState.pointsToWin;
+      }
 
       gameState.team1.score = 0;
       gameState.team2.score = 0;
-      gameState.clueChangesLeft = 10;  // Reset clue changes to 10 at game start
+      gameState.clueChangesLeft = 10;
       gameState.suddenDeath = false;
       gameState.sdScores = { team1: 0, team2: 0 };
       gameState.spectrumIndex = 0;
-      gameState.currentTurn = "team1-psychic";  // Make Team A always go first
+      gameState.currentTurn = "team1-psychic";
 
-      team1NameEl.textContent = gameState.team1.name;
-      team2NameEl.textContent = gameState.team2.name;
       team1Score.textContent  = "0";
       team2Score.textContent  = "0";
-      targetScoreEl.textContent = gameState.pointsToWin;
 
       setupScreen.classList.add("hidden");
       promptScreen.classList.remove("hidden");
       updatePromptUI();
     });
 
-    // Reinsert slider input listener
-    activeSlider.addEventListener("input", (e) => {
-      updateNeedle(parseInt(e.target.value, 10));
-    });
-
     function startNewRound() {
       roundResult.textContent = "";
-
       const arr = gameState.currentSpectrum;
       const [leftWord, rightWord] = arr[gameState.spectrumIndex % arr.length];
       gameState.spectrumIndex++;
@@ -537,44 +574,36 @@
 
       updateNeedle(90);
       activeSlider.style.display = "none";
-
-      // Fixed turn alternation logic
-      if (gameState.spectrumIndex === 1) {
-        // First round always starts with Team 1
-        gameState.currentTurn = "team1-psychic";
-        currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
+      
+      if (gameState.simpleMode) {
+        currentTurnEl.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds}`;
+        instructionText.textContent = "Click ‘Reveal Target’ when ready.";
       } else {
-        // For all subsequent rounds, check the previous *full* turn (not just the phase)
-        // By looking at the team name in post-reveal state which means the round was completed
-        const lastTeamWasTeam1 = gameState.currentTurn === "post-reveal" ? 
-          gameState.currentTurn.startsWith("team1") || gameState.lastActiveTeam === "team1" : 
-          gameState.lastActiveTeam === "team1";
-        
-        // Switch to opposite team
-        const nextTeam = lastTeamWasTeam1 ? "team2" : "team1";
-        
-        gameState.currentTurn = `${nextTeam}-psychic`;
-        currentTurnEl.textContent = `${gameState[nextTeam].name} Psychic`;
-        
-        // Store which team is playing for the next round's reference
-        gameState.lastActiveTeam = nextTeam;
+        if (gameState.spectrumIndex === 1) {
+          gameState.currentTurn = "team1-psychic";
+          currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
+        } else {
+          const lastTeamWasTeam1 = gameState.currentTurn === "post-reveal" ? 
+            gameState.currentTurn.startsWith("team1") || gameState.lastActiveTeam === "team1" : 
+            gameState.lastActiveTeam === "team1";
+          const nextTeam = lastTeamWasTeam1 ? "team2" : "team1";
+          gameState.currentTurn = `${nextTeam}-psychic`;
+          currentTurnEl.textContent = `${gameState[nextTeam].name} Psychic`;
+          gameState.lastActiveTeam = nextTeam;
+        }
+        const changeClueBtn = document.getElementById("change-clue-btn");
+        if (gameState.clueChangesLeft > 0) {
+          changeClueBtn.textContent = `Change Clue (${gameState.clueChangesLeft})`;
+          changeClueBtn.disabled = false;
+          changeClueBtn.classList.remove("opacity-50");
+        } else {
+          changeClueBtn.textContent = "No Changes Left";
+          changeClueBtn.disabled = true;
+          changeClueBtn.classList.add("opacity-50");
+        }
+        instructionText.textContent = `${currentTurnEl.textContent}: Click button to see the target.`;
+        messageArea.textContent     = 'Press "Reveal Target" to view the target position.';
       }
-
-      // Update the Change Clue button to reflect remaining changes
-      const changeClueBtn = document.getElementById("change-clue-btn");
-      if (gameState.clueChangesLeft > 0) {
-        changeClueBtn.textContent = `Change Clue (${gameState.clueChangesLeft})`;
-        changeClueBtn.disabled = false;
-        changeClueBtn.classList.remove("opacity-50");
-      } else {
-        changeClueBtn.textContent = "No Changes Left";
-        changeClueBtn.disabled = true;
-        changeClueBtn.classList.add("opacity-50");
-      }
-
-      instructionText.textContent = `${currentTurnEl.textContent}: Click button to see the target.`;
-      messageArea.textContent     = 'Press "Reveal Target" to view the target position.';
-
       // Reset hide/reveal button states
       revealTargetBtn.classList.remove("hidden");
       hideTargetBtn.classList.add("hidden");
@@ -587,32 +616,41 @@
       targetOverlay.style.display = "block";
       revealTargetBtn.classList.add("hidden");
       hideTargetBtn.classList.remove("hidden");
-      
-      // Hide the change clue button after target is revealed
       document.getElementById("change-clue-btn").classList.add("hidden");
-      
-      instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
-      messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
+      if(gameState.simpleMode){
+        instructionText.textContent = `Round ${gameState.currentRound}: View the target.`;
+        messageArea.textContent     = 'Press "Lock In Guess" to evaluate your attempt.';
+      } else {
+        instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
+        messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
+      }
     }
     
     function hideTarget() {
       targetOverlay.style.display = "none";
-
-      if (gameState.currentTurn === "team1-psychic") {
+      if (gameState.simpleMode) {
         gameState.currentTurn = "team1-guess";
-        currentTurnEl.textContent = `${gameState.team1.name} Guessing`;
-        instructionText.textContent = `${gameState.team1.name}: Place your guess on the spectrum.`;
+        currentTurnEl.textContent = `Player 1 Guessing`;
+        instructionText.textContent = `Player 1: Place your guess on the spectrum.`;
+        activeSlider.style.display = "block";
+        activeSlider.value = 90;
+        updateNeedle(90);
+        messageArea.textContent = `Adjust slider and press "Lock In Guess". Your team can earn 2-4 points based on accuracy.`;
       } else {
-        gameState.currentTurn = "team2-guess";
-        currentTurnEl.textContent = `${gameState.team2.name} Guessing`;
-        instructionText.textContent = `${gameState.team2.name}: Place your guess on the spectrum.`;
+        if (gameState.currentTurn === "team1-psychic") {
+          gameState.currentTurn = "team1-guess";
+          currentTurnEl.textContent = `${gameState.team1.name} Guessing`;
+          instructionText.textContent = `${gameState.team1.name}: Place your guess on the spectrum.`;
+        } else {
+          gameState.currentTurn = "team2-guess";
+          currentTurnEl.textContent = `${gameState.team2.name} Guessing`;
+          instructionText.textContent = `${gameState.team2.name}: Place your guess on the spectrum.`;
+        }
+        activeSlider.style.display = "block";
+        activeSlider.value = 90;
+        updateNeedle(90);
+        messageArea.textContent = `Adjust slider and press "Lock In Guess". Your team can earn 2-4 points based on accuracy.`;
       }
-
-      activeSlider.style.display = "block";
-      activeSlider.value = 90;
-      updateNeedle(90);
-
-      messageArea.textContent = `Adjust slider and press "Lock In Guess". Your team can earn 2-4 points based on accuracy.`;
       updateControlsVisibility();
     }
 
@@ -623,6 +661,18 @@
     }
 
     function lockGuess() {
+      if (gameState.simpleMode) {
+        const diff = Math.abs(gameState.guess - gameState.targetPosition);
+        const resultText = `Round ${gameState.currentRound}: You were ${diff.toFixed(1)}° off.`;
+        roundResult.textContent = resultText;
+        instructionText.textContent = "Target revealed!";
+        currentTurnEl.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds}`;
+        targetOverlay.style.display = "block";
+        activeSlider.style.display = "none";
+        gameState.currentTurn = "post-reveal";
+        updateControlsVisibility();
+        return;
+      }
       if (gameState.currentTurn === "team1-guess") {
         gameState.currentTurn = "team1-opponent";
         currentTurnEl.textContent = `${gameState.team2.name} Opponent Decision`;
@@ -763,10 +813,32 @@
     }
 
     function nextRound() {
+      if(gameState.simpleMode) {
+        gameState.currentRound++;
+        if(gameState.currentRound > gameState.totalRounds) {
+          endGame("Game Over: Simple Mode Completed");
+          return;
+        }
+        startNewRound();
+        activeSlider.style.display = "block";
+        return;
+      }
       startNewRound();
     }
 
     function updateControlsVisibility() {
+      if(gameState.simpleMode) {
+        document.getElementById("psychic-controls").classList.add("hidden");
+        document.getElementById("opponent-controls").classList.add("hidden");
+        if (gameState.currentTurn === "team1-guess" || gameState.currentTurn === "team2-guess") {
+          document.getElementById("guesser-controls").classList.remove("hidden");
+        } else if (gameState.currentTurn === "post-reveal") {
+          document.getElementById("next-round-controls").classList.remove("hidden");
+        } else {
+          document.getElementById("guesser-controls").classList.remove("hidden");
+        }
+        return;
+      }
       document.getElementById("psychic-controls").classList.add("hidden");
       document.getElementById("guesser-controls").classList.add("hidden");
       document.getElementById("opponent-controls").classList.add("hidden");
