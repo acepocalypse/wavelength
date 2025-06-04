@@ -538,20 +538,26 @@
       updateNeedle(90);
       activeSlider.style.display = "none";
 
-      // Always ensure Team A (team1) goes first on new game, otherwise alternate turns
-      if (gameState.spectrumIndex === 1) {  // First round of a new game
-        gameState.currentTurn = "team1-psychic";
-        currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
-      } else if (
-        gameState.currentTurn === "team2-opponent" ||
-        gameState.currentTurn === "team2-guess"   ||
-        gameState.currentTurn === "team2-psychic"
-      ) {
+      // Fixed turn alternation logic
+      if (gameState.spectrumIndex === 1) {
+        // First round always starts with Team 1
         gameState.currentTurn = "team1-psychic";
         currentTurnEl.textContent = `${gameState.team1.name} Psychic`;
       } else {
-        gameState.currentTurn = "team2-psychic";
-        currentTurnEl.textContent = `${gameState.team2.name} Psychic`;
+        // For all subsequent rounds, check the previous *full* turn (not just the phase)
+        // By looking at the team name in post-reveal state which means the round was completed
+        const lastTeamWasTeam1 = gameState.currentTurn === "post-reveal" ? 
+          gameState.currentTurn.startsWith("team1") || gameState.lastActiveTeam === "team1" : 
+          gameState.lastActiveTeam === "team1";
+        
+        // Switch to opposite team
+        const nextTeam = lastTeamWasTeam1 ? "team2" : "team1";
+        
+        gameState.currentTurn = `${nextTeam}-psychic`;
+        currentTurnEl.textContent = `${gameState[nextTeam].name} Psychic`;
+        
+        // Store which team is playing for the next round's reference
+        gameState.lastActiveTeam = nextTeam;
       }
 
       // Update the Change Clue button to reflect remaining changes
@@ -649,6 +655,9 @@
         activeTeam = "team2";
         oppTeam = "team1";
       }
+      
+      // Store which team was active in this round
+      gameState.lastActiveTeam = activeTeam;
 
       // FIX: Consistently determine left/right direction
       // From the perspective of the semi-circle, looking at it:
