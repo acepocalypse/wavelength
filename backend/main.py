@@ -50,6 +50,7 @@ async def generate_spectrums(req: SpectrumRequest):
         - Use **short phrases or descriptors**, not just adjectives
         - Avoid generic or overused opposites like "Hot/Cold" or "Happy/Sad"
         - Reflect **modern, cultural, behavioral, or humorous** contrasts
+        - Make it a mix of **specific spectrum pairs and broad spectrum pairs**
 
         Examples of the *style* we want:
         - “Would make a good pirate” vs “Would make a bad pirate”
@@ -69,7 +70,7 @@ async def generate_spectrums(req: SpectrumRequest):
         
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-05-20",
+            model="gemini-2.0-flash",
             contents=prompt_text,
             config=types.GenerateContentConfig(
                 temperature=1.3
