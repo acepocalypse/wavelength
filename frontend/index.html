@@ -922,6 +922,9 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       updatePromptUI();
+      activeSlider.addEventListener("input", (e) => {
+        updateNeedle(e.target.value);
+      });
     });
     document.getElementById("how-to-play-btn").addEventListener("click", () => {
   const guide = document.getElementById("new-player-guide");
