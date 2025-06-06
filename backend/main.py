@@ -40,30 +40,30 @@ async def generate_spectrums(req: SpectrumRequest):
         raise HTTPException(status_code=400, detail="'count' must be between 1 and 100")
 
     prompt_text = f"""
-        You are generating JSON data for a party game where players guess a hidden point on a spectrum between two opposing ideas.
+        You are generating JSON data for a party game where players guess a hidden point on a spectrum between two opposing **subjective stances**.
 
-        Generate exactly {count} fun and creative **spectrum pairs** inspired by the theme: "{idea}".
+        Generate exactly {count} **creative and opinion-based spectrum pairs** inspired by the theme: "{idea}".
 
-        Each pair should:
-        - Be **contextual, opinion-driven, or socially debatable**
-        - Feel like something players could **argue about or laugh about**
-        - Use **short phrases or descriptors**, not just adjectives
-        - Avoid generic or overused opposites like "Hot/Cold" or "Happy/Sad"
-        - Reflect **modern, cultural, behavioral, or humorous** contrasts
-        - Make it a mix of **specific spectrum pairs and broad spectrum pairs**
+        Each pair must:
+        - Be **debatable, contextual, or socially subjective**
+        - Spark **conversation, disagreement, or laughter**
+        - Use **short, punchy phrases or descriptors** (not single adjectives)
+        - Avoid boring or universal opposites (like "Good/Bad", "Hot/Cold")
+        - Reflect **modern behavior, social norms, internet culture, or generational quirks**
+        - Include a mix of **niche** and **broad** spectrums
 
-        Examples of the *style* we want:
-        - “Would make a good pirate” vs “Would make a bad pirate”
-        - “Culturally significant” vs “Culturally insignificant”
-        - “Fboy” vs “Husband”
-        - “Exciting crime” vs “Boring crime”
+        Examples of the *style* you should follow:
+        - "Would make a good pirate" vs "Would make a bad pirate"
+        - "Fboy" vs "Husband"
+        - "Culturally significant" vs "Culturally insignificant"
+        - "Definitely ironic" vs "Completely sincere"
 
-        Your output must be **valid JSON only**: an array of objects with "left" and "right" keys.
+        Format your output as **valid JSON only**:
+        An array of {count} objects, each with a "left" and "right" key, like this:
 
-        Output format:
         [
-        {{"left": "Unacceptable hat", "right": "Acceptable hat"}},
-        {{"left": "Could not defeat this animal", "right": "Could defeat this animal"}},
+        {{"left": "Cringe fashion choice", "right": "Sick fashion statement"}},
+        {{"left": "Underrated opinion", "right": "Overrated opinion"}},
         ...
         ]
         """
