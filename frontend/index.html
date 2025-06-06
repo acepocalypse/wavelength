@@ -27,13 +27,42 @@
       color: var(--navy-border);
     }
 
+    /* Animation keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    /* Screen transitions */
+    .screen {
+      animation: fadeIn 0.5s ease-out;
+    }
+
     .slider-container {
       position: relative;
       width: 100%;
       max-width: var(--full-width);
       height: var(--container-height);
       margin: 0 auto 0.25rem;
+      animation: slideIn 0.6s ease-out;
     }
+
     .semi-circle {
       position: relative;
       width: 100%;
@@ -46,7 +75,9 @@
       overflow: hidden;
       box-sizing: border-box;
       box-shadow: inset 0px 4px 10px rgba(0,0,0,0.05);
+      transition: box-shadow 0.3s ease;
     }
+
     .target-overlay {
       position: absolute;
       top: 0;
@@ -57,7 +88,13 @@
       z-index: 2;
       opacity: 0.85;
       background: transparent;
+      transition: opacity 0.3s ease;
     }
+
+    .target-overlay.animate-reveal {
+      animation: targetReveal 0.5s ease-out;
+    }
+
     .guess-marker {
       position: absolute;
       bottom: 0;
@@ -67,6 +104,7 @@
       transform-origin: bottom center;
       z-index: 3;
     }
+
     .needle-stick {
       position: absolute;
       bottom: 0;
@@ -79,6 +117,7 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.15);
       z-index: 4;
     }
+
     .needle-base {
       position: absolute;
       bottom: -10px;
@@ -91,13 +130,83 @@
       box-shadow: 0 1px 4px rgba(0,0,0,0.2);
       z-index: 5;
     }
+
     .hidden { display: none; }
     .no-mb { margin-bottom: 0 !important; }
+
     .spectrum-word {
       font-size: 1.25rem;
       font-weight: 700;
       max-width: 100%;
       padding: 0 5px;
+      transition: transform 0.2s ease, color 0.3s ease;
+    }
+
+    .spectrum-word:hover {
+      transform: scale(1.05);
+    }
+
+    /* Button animations */
+    button {
+      transition: all 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    /* Score animation */
+    .score-display {
+      transition: all 0.3s ease;
+    }
+
+    .score-display.updated {
+      animation: bounce 0.6s ease;
+      color: #059669 !important;
+    }
+
+    /* Input slider animation */
+    input[type="range"] {
+      transition: all 0.2s ease;
+    }
+
+    input[type="range"]:hover {
+      transform: scale(1.02);
+    }
+
+    /* Message area animations */
+    .message-area {
+      transition: all 0.3s ease;
+    }
+
+    .message-area.highlight {
+      animation: pulse 0.5s ease;
+      background-color: #FEF3C7 !important;
+      border-color: #F59E0B !important;
+    }
+
+    /* Controls fade-in */
+    .controls-section {
+      /* Remove transition animations that cause glitchy button visibility */
+    }
+
+    .controls-section.hidden {
+      /* Remove opacity and transform animations */
+    }
+
+    /* Title animations */
+    .title-letter {
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .title-letter:hover {
+      transform: scale(1.1) rotate(-2deg);
     }
   </style>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -105,10 +214,10 @@
 <body class="min-h-screen flex flex-col items-center">
 
   <!-- Setup Screen -->
-  <div id="setup-screen" class="flex flex-col items-center justify-center w-full min-h-screen px-4">
+  <div id="setup-screen" class="screen flex flex-col items-center justify-center w-full min-h-screen px-4">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h1 class="text-5xl font-extrabold tracking-tight mb-4" style="color: var(--pivot-color); letter-spacing: -0.03em;">
-        Think<span style="color: var(--needle-color)">sync</span>
+        <span class="title-letter">T</span><span class="title-letter">h</span><span class="title-letter">i</span><span class="title-letter">n</span><span class="title-letter">k</span><span style="color: var(--needle-color)"><span class="title-letter">s</span><span class="title-letter">y</span><span class="title-letter">n</span><span class="title-letter">c</span></span>
       </h1>
       <div class="space-y-4 mb-6 text-left">
         <div>
@@ -166,7 +275,7 @@
   </div>
 
   <!-- Spectrum Source Screen -->
-  <div id="prompt-screen" class="hidden flex flex-col items-center justify-center w-full min-h-screen px-4">
+  <div id="prompt-screen" class="screen hidden flex flex-col items-center justify-center w-full min-h-screen px-4">
     <div class="bg-white border-2 border-gray-800 rounded-xl shadow-lg p-6 w-full max-w-md text-center">
       <h2 class="text-2xl font-bold mb-4">Choose Spectrum Source</h2>
       <div class="mb-4 text-left">
@@ -202,10 +311,10 @@
   </div>
 
   <!-- Game Screen -->
-  <div id="game-screen" class="hidden flex flex-col items-center w-full px-4 py-6">
+  <div id="game-screen" class="screen hidden flex flex-col items-center w-full px-4 py-6">
     <header class="w-full max-w-xl text-center mb-6">
       <h1 class="text-5xl font-extrabold tracking-tight mb-4" style="color: var(--pivot-color); letter-spacing: -0.03em;">
-        Think<span style="color: var(--needle-color)">sync</span>
+        <span class="title-letter">T</span><span class="title-letter">h</span><span class="title-letter">i</span><span class="title-letter">n</span><span class="title-letter">k</span><span style="color: var(--needle-color)"><span class="title-letter">s</span><span class="title-letter">y</span><span class="title-letter">n</span><span class="title-letter">c</span></span>
       </h1>
     </header>
 
@@ -233,7 +342,7 @@
     <div id="instruction-text" class="text-center text-base sm:text-lg font-medium text-gray-800 mb-2 w-full max-w-md"></div>
 
     <div class="w-full max-w-md space-y-4">
-      <div id="psychic-controls" class="hidden">
+      <div id="psychic-controls" class="controls-section hidden">
         <div id="top-controls" class="flex mb-4">
           <button id="reveal-target-btn"
                   class="flex-1 py-3 my-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-indigo-600 text-white hover:bg-indigo-700 mr-2">
@@ -250,7 +359,7 @@
         </button>
       </div>
 
-      <div id="guesser-controls" class="hidden">
+      <div id="guesser-controls" class="controls-section hidden">
         <div class="horizontal-slider-container w-full">
           <input id="active-horizontal-slider" type="range" min="0" max="180" value="90" class="w-full"/>
         </div>
@@ -262,7 +371,7 @@
         </div>
       </div>
 
-      <div id="opponent-controls" class="hidden flex space-x-2">
+      <div id="opponent-controls" class="controls-section hidden flex space-x-2">
         <button id="choose-left-btn"
                 class="bg-red-600 hover:bg-red-700 text-white flex-1 py-3 my-3 rounded-lg font-semibold text-base sm:text-lg shadow-md">
           Left of Needle
@@ -273,7 +382,7 @@
         </button>
       </div>
 
-      <div id="next-round-controls" class="hidden flex flex-col items-center">
+      <div id="next-round-controls" class="controls-section hidden flex flex-col items-center">
         <div id="round-result"
              class="text-center text-lg sm:text-xl font-semibold py-3 px-4 rounded-lg bg-green-100 text-green-800 mb-2 w-full">
         </div>
@@ -289,11 +398,11 @@
       <div id="scoreboard-normal" class="grid grid-cols-2 gap-4 mb-4">
         <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg">
           <h3 id="team1-name" class="text-sm sm:text-base font-medium text-gray-700">Team 1</h3>
-          <p id="team1-score-display" class="text-xl sm:text-2xl font-bold text-blue-600">0</p>
+          <p id="team1-score-display" class="score-display text-xl sm:text-2xl font-bold text-blue-600">0</p>
         </div>
         <div class="text-center bg-red-50 p-3 sm:p-4 rounded-lg">
           <h3 id="team2-name" class="text-sm sm:text-base font-medium text-gray-700">Team 2</h3>
-          <p id="team2-score-display" class="text-xl sm:text-2xl font-bold text-red-600">0</p>
+          <p id="team2-score-display" class="score-display text-xl sm:text-2xl font-bold text-red-600">0</p>
         </div>
         <div class="text-center bg-gray-50 p-3 sm:p-4 rounded-lg">
           <h3 class="text-sm sm:text-base font-medium text-gray-700">Current Turn</h3>
@@ -309,7 +418,7 @@
       <div id="scoreboard-simple" class="hidden mb-4">
         <div class="text-center bg-blue-50 p-3 sm:p-4 rounded-lg mb-4">
           <h3 id="team1-name-simple" class="text-sm sm:text-base font-medium text-gray-700">Total Score</h3>
-          <p id="team1-score-display-simple" class="text-xl sm:text-2xl font-bold text-blue-600">0</p>
+          <p id="team1-score-display-simple" class="score-display text-xl sm:text-2xl font-bold text-blue-600">0</p>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="text-center bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -325,7 +434,7 @@
 
       <div>
         <div id="message-area"
-             class="text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base">
+             class="message-area text-center py-3 px-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm sm:text-base">
           Game will begin when you press "Hide Target &amp; Pass to Guessers."
         </div>
       </div>
@@ -654,6 +763,8 @@
 
     function revealTarget() {
     targetOverlay.style.display = "block";
+    targetOverlay.classList.add("animate-reveal");
+    
     revealTargetBtn.classList.add("hidden");
     hideTargetBtn.classList.remove("hidden");
     document.getElementById("change-clue-btn").classList.add("hidden");
@@ -665,10 +776,16 @@
       instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
       messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
     }
+    
+    // Highlight message area
+    messageArea.classList.add('highlight');
+    setTimeout(() => messageArea.classList.remove('highlight'), 500);
   }
   
   function hideTarget() {
       targetOverlay.style.display = "none";
+      targetOverlay.classList.remove("animate-reveal");
+      
       if (gameState.simpleMode) {
         gameState.currentTurn = "team1-guess";
         document.getElementById('current-turn-simple').innerHTML = `Round ${gameState.currentRound}/${gameState.totalRounds}<br>Guessing Phase`;
@@ -701,6 +818,12 @@
       guessMarker.style.transform = `translateX(-50%) rotate(${adjusted}deg)`;
     }
 
+    function animateScoreUpdate(element, newScore) {
+      element.classList.add('updated');
+      element.textContent = newScore;
+      setTimeout(() => element.classList.remove('updated'), 600);
+    }
+
     function lockGuess() {
       if (gameState.simpleMode) {
         const guessed = gameState.guess;
@@ -719,10 +842,14 @@
         instructionText.textContent = "Target revealed!";
         document.getElementById('current-turn-simple').innerHTML = `Round ${gameState.currentRound}/${gameState.totalRounds}<br>Complete`;
         targetOverlay.style.display = "block";
+        targetOverlay.classList.add("animate-reveal");
         activeSlider.style.display = "none";
         gameState.currentTurn = "post-reveal";
-        team1Score.textContent = gameState.team1.score;
-        document.getElementById('team1-score-display-simple').textContent = gameState.team1.score;
+        
+        // Animate score updates
+        animateScoreUpdate(team1Score, gameState.team1.score);
+        animateScoreUpdate(document.getElementById('team1-score-display-simple'), gameState.team1.score);
+        
         messageArea.textContent = `Total Score: ${gameState.team1.score} points`;
         updateControlsVisibility();
         return;
@@ -781,9 +908,13 @@
         } else {
           resultText += ` Perfect guess! ${gameState[oppTeam].name} doesn't get a chance to score.`;
         }
-        team1Score.textContent = gameState.team1.score;
-        team2Score.textContent = gameState.team2.score;
+        
+        // Animate score updates
+        animateScoreUpdate(team1Score, gameState.team1.score);
+        animateScoreUpdate(team2Score, gameState.team2.score);
+        
         targetOverlay.style.display = "block";
+        targetOverlay.classList.add("animate-reveal");
         let resultHTML = resultText.replace(/\. /, ".<br><span class='text-sm'>") + "</span>";
         roundResult.innerHTML = resultHTML;
         instructionText.textContent = "Target revealed!";
@@ -824,6 +955,7 @@
           }
         }
         targetOverlay.style.display = "block";
+        targetOverlay.classList.add("animate-reveal");
         let resultHTML = resultText.replace(/\. /, ".<br><span class='text-sm'>") + "</span>";
         roundResult.innerHTML = resultHTML;
         instructionText.textContent = "Sudden Death Target revealed!";
@@ -865,12 +997,16 @@
     }
 
     function updateControlsVisibility() {
+      const sections = ['psychic-controls', 'guesser-controls', 'opponent-controls', 'next-round-controls'];
+      
+      // Hide all sections immediately without animation
+      sections.forEach(id => {
+        const section = document.getElementById(id);
+        section.classList.add('hidden');
+      });
+      
+      // Show appropriate section immediately without delay
       if(gameState.simpleMode) {
-        document.getElementById("psychic-controls").classList.add("hidden");
-        document.getElementById("guesser-controls").classList.add("hidden");
-        document.getElementById("opponent-controls").classList.add("hidden");
-        document.getElementById("next-round-controls").classList.add("hidden");
-        
         switch (gameState.currentTurn) {
           case "team1-psychic":
             document.getElementById("psychic-controls").classList.remove("hidden");
@@ -884,10 +1020,6 @@
         }
         return;
       }
-      document.getElementById("psychic-controls").classList.add("hidden");
-      document.getElementById("guesser-controls").classList.add("hidden");
-      document.getElementById("opponent-controls").classList.add("hidden");
-      document.getElementById("next-round-controls").classList.add("hidden");
 
       switch (gameState.currentTurn) {
         case "team1-psychic":
@@ -923,9 +1055,7 @@
         btn.className = "w-full py-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-gray-800 text-white hover:bg-gray-700 mt-4";
         btn.textContent = "New Game";
         btn.onclick = () => {
-          document.getElementById("restart-btn").remove();
-          gameScreen.classList.add("hidden");
-          setupScreen.classList.remove("hidden");
+          window.location.reload();
         };
         messageArea.parentNode.appendChild(btn);
       }
