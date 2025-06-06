@@ -92,6 +92,7 @@
       z-index: 5;
     }
     .hidden { display: none; }
+    .no-mb { margin-bottom: 0 !important; }
     .spectrum-word {
       font-size: 1.25rem;
       font-weight: 700;
@@ -229,7 +230,7 @@
 
     <div class="w-full max-w-md space-y-4">
       <div id="psychic-controls" class="hidden">
-        <div class="flex mb-4">
+        <div id="top-controls" class="flex mb-4">
           <button id="reveal-target-btn"
                   class="flex-1 py-3 my-3 rounded-lg text-base sm:text-lg font-semibold shadow-md bg-indigo-600 text-white hover:bg-indigo-700 mr-2">
             Reveal Target
@@ -590,7 +591,7 @@
 		document.querySelector('.bg-red-50').parentElement.style.display = 'none';
 		
 		gameState.currentTurn = "team1-psychic";
-		currentTurnEl.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds} - Psychic Phase`;
+		currentTurnEl.innerHTML = `Round ${gameState.currentRound}/${gameState.totalRounds}<br>Psychic Phase`;
 		instructionText.textContent = "Click 'Reveal Target' to see the target position.";
 		messageArea.textContent = 'Press "Reveal Target" to view the target position.';
 	} else {
@@ -622,28 +623,30 @@
 	revealTargetBtn.classList.remove("hidden");
 	hideTargetBtn.classList.add("hidden");
 	document.getElementById("change-clue-btn").classList.remove("hidden");
+	document.getElementById("top-controls").classList.remove("no-mb");
 	updateControlsVisibility();
 }
 
     function revealTarget() {
-      targetOverlay.style.display = "block";
-      revealTargetBtn.classList.add("hidden");
-      hideTargetBtn.classList.remove("hidden");
-      document.getElementById("change-clue-btn").classList.add("hidden");
-      if (gameState.simpleMode) {
-        instructionText.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds} - View the target.`;
-        messageArea.textContent = 'Press "Hide Target & Pass to Guessers."';
-      } else {
-        instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
-        messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
-      }
+    targetOverlay.style.display = "block";
+    revealTargetBtn.classList.add("hidden");
+    hideTargetBtn.classList.remove("hidden");
+    document.getElementById("change-clue-btn").classList.add("hidden");
+    document.getElementById("top-controls").classList.add("no-mb");
+    if (gameState.simpleMode) {
+      instructionText.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds} - View the target.`;
+      messageArea.textContent = 'Press "Hide Target & Pass to Guessers."';
+    } else {
+      instructionText.textContent = `${currentTurnEl.textContent}: View the target.`;
+      messageArea.textContent     = 'Press "Hide Target & Pass to Guessers."';
     }
-    
-    function hideTarget() {
+  }
+  
+  function hideTarget() {
       targetOverlay.style.display = "none";
       if (gameState.simpleMode) {
         gameState.currentTurn = "team1-guess";
-        currentTurnEl.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds} - Guessing`;
+        currentTurnEl.innerHTML = `Round ${gameState.currentRound}/${gameState.totalRounds}<br>Guessing Phase`;
         instructionText.textContent = `Place your guess on the spectrum.`;
         activeSlider.style.display = "block";
         activeSlider.value = 90;
@@ -689,7 +692,7 @@
           : `You score 0 points.`;
         roundResult.textContent = `Round ${gameState.currentRound}: ${resultText} You were ${diff.toFixed(1)}° off.`;
         instructionText.textContent = "Target revealed!";
-        currentTurnEl.textContent = `Round ${gameState.currentRound}/${gameState.totalRounds} - Complete`;
+        currentTurnEl.innerHTML = `Round ${gameState.currentRound}/${gameState.totalRounds}<br>Complete`;
         targetOverlay.style.display = "block";
         activeSlider.style.display = "none";
         gameState.currentTurn = "post-reveal";
