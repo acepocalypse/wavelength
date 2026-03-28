@@ -70,7 +70,7 @@ async def generate_spectrums(req: SpectrumRequest):
         
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-3-flash-preview",
             contents=prompt_text,
             config=types.GenerateContentConfig(
                 temperature=1.3
