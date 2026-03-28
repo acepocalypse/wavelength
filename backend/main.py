@@ -1,5 +1,6 @@
 import os
 import json
+import re
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -28,6 +29,59 @@ app.add_middleware(
 class SpectrumRequest(BaseModel):
     idea: str
     count: int = 30
+
+
+MODEL_CANDIDATES = [
+    "gemini-3-flash-preview",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+]
+
+
+def extract_text_from_response(response) -> str:
+    """Extract plain text from a Gemini response across SDK variants."""
+    direct_text = getattr(response, "text", None)
+    if isinstance(direct_text, str) and direct_text.strip():
+        return direct_text.strip()
+
+    candidates = getattr(response, "candidates", None) or []
+    for cand in candidates:
+        content = getattr(cand, "content", None)
+        parts = getattr(content, "parts", None) if content else None
+        if not parts:
+            continue
+        text_chunks = []
+        for part in parts:
+            text = getattr(part, "text", None)
+            if isinstance(text, str) and text.strip():
+                text_chunks.append(text)
+        if text_chunks:
+            return "\n".join(text_chunks).strip()
+
+    return ""
+
+
+def parse_spectrum_json(raw: str):
+    """Parse generated JSON and recover from fenced/extra text wrappers."""
+    text = raw.strip()
+    if text.startswith("```json"):
+        text = text.split("```json", 1)[1]
+    if text.startswith("```"):
+        text = text.split("```", 1)[1]
+    if text.endswith("```"):
+        text = text.rsplit("```", 1)[0]
+    text = text.strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: extract the first top-level JSON array from surrounding text.
+    match = re.search(r"\[.*\]", text, flags=re.DOTALL)
+    if not match:
+        raise ValueError("Model output did not contain a JSON array")
+    return json.loads(match.group(0))
 
 @app.post("/api/generateSpectrums")
 async def generate_spectrums(req: SpectrumRequest):
@@ -68,42 +122,33 @@ async def generate_spectrums(req: SpectrumRequest):
         ]
         """
         
-    try:
-        response = client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=prompt_text,
-            config=types.GenerateContentConfig(
-                temperature=1.3
-            )
-        )
-        
-        if response.candidates and len(response.candidates) > 0:
-            if response.candidates[0].content and response.candidates[0].content.parts:
-                generated = response.candidates[0].content.parts[0].text
-                # Debug - print raw response
-                print("Raw response from API:", repr(generated))
-                
-                # Remove any markdown code block syntax if present
-                if generated.startswith("```json"):
-                    generated = generated.split("```json", 1)[1]
-                if generated.startswith("```"):
-                    generated = generated.split("```", 1)[1]
-                if generated.endswith("```"):
-                    generated = generated.rsplit("```", 1)[0]
-                    
-                # Strip whitespace
-                generated = generated.strip()
-                
-                print("Processed response:", repr(generated))
-                
-                if not generated:
-                    raise ValueError("Empty response after processing")
-            else:
-                raise ValueError("No text content in response")
-        else:
-            raise ValueError("No candidates in response")
+    last_error = None
+    spectrums = None
 
-        spectrums = json.loads(generated)
+    for model_name in MODEL_CANDIDATES:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt_text,
+                config=types.GenerateContentConfig(temperature=1.1),
+            )
+
+            generated = extract_text_from_response(response)
+            if not generated:
+                raise ValueError("No text content in response")
+
+            spectrums = parse_spectrum_json(generated)
+            if isinstance(spectrums, list):
+                break
+            raise ValueError("Parsed JSON root is not a list")
+        except Exception as e:
+            last_error = e
+            print(f"Model {model_name} failed:", e)
+
+    try:
+        if spectrums is None:
+            raise ValueError(f"All models failed. Last error: {last_error}")
+
         if (
             not isinstance(spectrums, list)
             or len(spectrums) < count
